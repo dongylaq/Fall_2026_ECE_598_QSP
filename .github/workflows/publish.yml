@@ -35,8 +35,8 @@ jobs:
           echo "$HOME/.TinyTeX/bin/x86_64-linux" >> "$GITHUB_PATH"
           "$HOME/.TinyTeX/bin/x86_64-linux/tlmgr" install standalone pgf braket quantikz
 
-      - name: Render HTML book
-        run: quarto render QSP_Lecture_Notes --to html
+      - name: Render HTML and PDF books
+        run: quarto render QSP_Lecture_Notes
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6

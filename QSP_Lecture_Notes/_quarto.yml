@@ -5,6 +5,8 @@ project:
 book:
   title: "Quantum Signal Processing"
   subtitle: "ECE 598 Lecture Notes, Fall 2026"
+  output-file: Quantum-Signal-Processing
+  downloads: [pdf]
   author:
     - name: |
         Yulong Dong\
