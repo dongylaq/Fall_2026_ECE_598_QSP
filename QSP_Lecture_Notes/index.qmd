@@ -1,0 +1,5 @@
+# Preface {.unnumbered}
+
+These notes accompany **ECE 598: Quantum Signal Processing** at the University of Michigan.
+
+The course schedule, topics, and assignments are listed in the [course syllabus](https://docs.google.com/spreadsheets/d/1M_HzrgOuHMDV_hEFpdavi6ST-E7BES30UUhE5ECxV6k/edit?usp=sharing).

@@ -1,0 +1,52 @@
+:root {
+  --qsp-navy: #17365d;
+  --qsp-blue: #315f8c;
+  --qsp-paper: #fffdf8;
+}
+body {
+  background: var(--qsp-paper);
+  color: #252525;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+h1,
+h2,
+h3,
+.sidebar-title,
+.chapter-number {
+  color: var(--qsp-navy);
+}
+
+.sidebar-navigation a,
+.quarto-navigation-tool {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.theorem,
+.definition,
+.lemma,
+.corollary {
+  border-left: 0.22rem solid var(--qsp-blue);
+  background: rgb(49 95 140 / 6%);
+  padding: 0.8rem 1rem 0.25rem;
+  margin: 1.2rem 0;
+}
+
+.tikz-svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.proof > :last-child::after {
+  content: "\25a1";
+  float: right;
+  font-size: 2em;
+  line-height: 1;
+  margin-left: 0.5rem;
+}
+
+#quarto-content {
+  line-height: 1.65;
+}

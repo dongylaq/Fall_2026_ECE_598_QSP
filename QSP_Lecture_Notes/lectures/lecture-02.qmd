@@ -1,0 +1,201 @@
+# Lecture 2: The Double-Slit Experiment and Quantum Postulates {#sec-lecture-02}
+
+*Class date: September 2, 2026*
+
+Classical mechanics distinguishes particles from waves. A localized particle follows one path, whereas a wave can pass through two openings and interfere. The double-slit experiment shows why neither description alone is sufficient for a quantum system. It also motivates the mathematical postulates used throughout this course: states are unit vectors, closed-system dynamics are unitary, physical observables are Hermitian operators, and projective measurement produces probabilistic outcomes and state update.
+
+## The double-slit experiment {#sec-double-slit}
+
+Consider a source, a barrier containing two slits, and a detection screen. Classical particles passing independently through the barrier produce two broad peaks aligned with the slits. A classical wave passes through both openings, and the two emerging wavefronts interfere. Constructive and destructive interference then produce alternating bright and dark fringes.
+
+::: {#fig-double-slit}
+```{.tikz}
+%%| filename: double-slit
+%%| alt: A source emits toward two slits, after which two paths reach a screen.
+\begin{tikzpicture}[>=stealth,thick,scale=0.95]
+  \node[draw,rounded corners,minimum width=1.5cm,minimum height=0.75cm] (source) at (0,0) {source};
+  \draw (3,-2.2) -- (3,-0.45);
+  \draw (3,0.45) -- (3,2.2);
+  \draw (3,-0.2) -- (3,0.2);
+  \node[above] at (3,2.2) {double slit};
+  \draw (7,-2.5) -- (7,2.5);
+  \node[above] at (7,2.5) {screen};
+  \draw[->] (source.east) -- (2.8,0);
+  \draw[->] (3.2,0.33) -- (6.8,1.35);
+  \draw[->] (3.2,-0.33) -- (6.8,-1.35);
+  \draw[dashed] (3.2,0.33) -- (6.8,-0.35);
+  \draw[dashed] (3.2,-0.33) -- (6.8,0.35);
+\end{tikzpicture}
+```
+
+The two alternatives in the double-slit experiment. When no which-path information is available, their probability amplitudes combine before the detection probability is computed.
+:::
+
+The quantum experiment combines both behaviors. Photons arrive at the screen as localized detection events, one photon at a time. Nevertheless, after many repetitions their empirical distribution approaches an interference pattern. The single photon therefore cannot be modeled as a classical particle that secretly chooses a slit while leaving all other aspects of the experiment unchanged.
+
+The distinction is exposed by a which-path detector. If the apparatus records the slit through which the photon passes, the two alternatives become distinguishable and the interference pattern disappears. The experiment does not let us observe complete which-path information and interference in the same run. This complementarity was central to the Bohr--Einstein debate. Modern single-atom experiments can control the coherence of the scattering process directly and provide a particularly clean realization of the same principle [@fedoseev2025].
+
+The key point is not that a quantum object switches between an ordinary particle and an ordinary wave. The experimental arrangement determines which alternatives remain coherent, and quantum theory assigns amplitudes to those alternatives.
+
+## Classical and quantum states {#sec-classical-quantum-states}
+
+A classical state is one element of a set of mutually exclusive possibilities: a coin is heads or tails, and a die shows one value in $\{1,2,3,4,5,6\}$. Classical uncertainty is represented by a probability distribution over these states. A quantum state instead permits coherent superpositions of basis states.
+
+::: {#def-quantum-state}
+## Quantum state
+
+For a finite-dimensional quantum system with Hilbert space $\mathcal{H}\cong\mathbb{C}^d$, a pure state is represented by a unit vector $\lvert\psi\rangle\in\mathcal{H}$. Thus
+
+$$
+\langle\psi\vert\psi\rangle=1.
+$$ {#eq-state-normalization}
+
+Two unit vectors that differ only by a global phase represent the same physical state: $\lvert\psi\rangle$ and $e^{i\theta}\lvert\psi\rangle$ are physically equivalent.
+:::
+
+After choosing an orthonormal basis $\{\lvert 0\rangle,\ldots,\lvert d-1\rangle\}$, every state has a unique expansion
+
+$$
+\lvert\psi\rangle=\sum_{j=0}^{d-1}\alpha_j\lvert j\rangle,
+\qquad \alpha_j\in\mathbb{C},
+$$ {#eq-state-expansion}
+
+and @eq-state-normalization becomes $\sum_j\lvert\alpha_j\rvert^2=1$. For a qubit,
+
+$$
+\lvert\psi\rangle=\alpha\lvert0\rangle+\beta\lvert1\rangle,
+\qquad \lvert\alpha\rvert^2+\lvert\beta\rvert^2=1.
+$$ {#eq-qubit-state}
+
+The ket $\lvert\psi\rangle$ is a column vector. Its conjugate transpose is the bra $\langle\psi\rvert=\lvert\psi\rangle^\dagger$. The inner product $\langle\phi\vert\psi\rangle$ measures the complex overlap between two state vectors.
+
+## Unitary evolution {#sec-unitary-evolution}
+
+A closed quantum system must evolve linearly without changing the normalization condition in @eq-state-normalization. Over complex vector spaces, the transformations with this property are unitary.
+
+::: {#def-unitary}
+## Unitary operator
+
+An operator $U\in\mathbb{C}^{d\times d}$ is unitary if
+
+$$
+U^\dagger U=UU^\dagger=I.
+$$ {#eq-unitary-definition}
+
+Here $U^\dagger=(U^*)^T$ is the conjugate transpose.
+:::
+
+::: {#thm-unitary-preserves-inner-products}
+## Unitary operators preserve inner products
+
+If $U$ is unitary, then $\langle U\phi\vert U\psi\rangle=\langle\phi\vert\psi\rangle$ for all $\lvert\phi\rangle,\lvert\psi\rangle\in\mathcal{H}$. In particular, unitary evolution preserves norms and maps quantum states to quantum states.
+:::
+
+The claim follows directly from @eq-unitary-definition:
+
+$$
+\langle U\phi\vert U\psi\rangle
+=\langle\phi\rvert U^\dagger U\lvert\psi\rangle
+=\langle\phi\vert\psi\rangle.
+$$ {#eq-unitary-inner-product}
+
+We therefore write a closed-system evolution as
+
+$$
+\lvert\psi'\rangle=U\lvert\psi\rangle.
+$$ {#eq-unitary-evolution}
+
+## Physical observables {#sec-observables}
+
+Measurement outcomes are real numbers. Hermitian operators provide exactly the spectral structure needed to represent these observables.
+
+::: {#def-hermitian-observable}
+## Hermitian observable
+
+An operator $M\in\mathbb{C}^{d\times d}$ is Hermitian if $M^\dagger=M$. A physical observable is represented by a Hermitian operator.
+:::
+
+::: {#thm-spectral-decomposition}
+## Spectral decomposition
+
+Every Hermitian operator $M$ has real eigenvalues and an orthonormal eigenbasis. If $\lambda_r$ are its distinct eigenvalues and $P_r$ is the orthogonal projector onto the eigenspace associated with $\lambda_r$, then
+
+$$
+M=\sum_r\lambda_r P_r,
+\qquad P_r^\dagger=P_r,
+\qquad P_r^2=P_r,
+\qquad \sum_rP_r=I.
+$$ {#eq-spectral-decomposition}
+:::
+
+For example, the Pauli $X$ observable is
+
+$$
+X=\begin{pmatrix}0&1\\1&0\end{pmatrix}
+=\lvert+\rangle\!\langle+\rvert-\lvert-\rangle\!\langle-\rvert,
+$$ {#eq-pauli-x-spectrum}
+
+where $\lvert+\rangle=(\lvert0\rangle+\lvert1\rangle)/\sqrt{2}$ and $\lvert-\rangle=(\lvert0\rangle-\lvert1\rangle)/\sqrt{2}$. Thus $X$ has eigenvalues $+1$ and $-1$, and its eigenvectors form a complete basis.
+
+## Projective measurement {#sec-projective-measurement}
+
+The spectral projectors in @eq-spectral-decomposition determine both the possible measurement outcomes and the state after an outcome is observed.
+
+::: {#def-projective-measurement}
+## Projective measurement postulate
+
+Let $M=\sum_r\lambda_rP_r$ be the spectral decomposition of an observable, and let the system be in state $\lvert\psi\rangle$. Measuring $M$ gives outcome $\lambda_r$ with probability
+
+$$
+p(r)=\langle\psi\rvert P_r\lvert\psi\rangle
+=\lVert P_r\lvert\psi\rangle\rVert^2.
+$$ {#eq-born-rule}
+
+Conditioned on obtaining outcome $\lambda_r$ with $p(r)>0$, the post-measurement state is
+
+$$
+\lvert\psi_r\rangle
+=\frac{P_r\lvert\psi\rangle}{\sqrt{p(r)}}.
+$$ {#eq-projection-update}
+:::
+
+The normalization factor in @eq-projection-update is fixed by @eq-born-rule. For a nondegenerate eigenvalue, $P_r=\lvert r\rangle\!\langle r\rvert$, so the post-measurement state is the corresponding eigenvector up to a global phase.
+
+As a first example, measure $X$ on $\lvert0\rangle$. Since $\lvert0\rangle=(\lvert+\rangle+\lvert-\rangle)/\sqrt{2}$, @eq-born-rule gives
+
+$$
+p(+1)=\lvert\langle+\vert0\rangle\rvert^2=\frac12,
+\qquad
+p(-1)=\lvert\langle-\vert0\rangle\rvert^2=\frac12.
+$$ {#eq-x-measurement-probabilities}
+
+The state becomes $\lvert+\rangle$ after outcome $+1$ and $\lvert-\rangle$ after outcome $-1$.
+
+Degeneracy explains why the measurement rule is written with projectors rather than individual eigenvectors. Consider
+
+$$
+A=\begin{pmatrix}0&1&0\\1&0&0\\0&0&1\end{pmatrix}.
+$$ {#eq-degenerate-observable}
+
+Its eigenvalue $+1$ has the two-dimensional eigenspace spanned by $\lvert+\rangle=(1,1,0)^T/\sqrt{2}$ and $\lvert2\rangle=(0,0,1)^T$, while $-1$ has eigenvector $\lvert-\rangle=(1,-1,0)^T/\sqrt{2}$. Hence
+
+$$
+A=(+1)P_++(-1)P_-,
+\qquad
+P_+=\lvert+\rangle\!\langle+\rvert+\lvert2\rangle\!\langle2\rvert,
+\qquad
+P_-=\lvert-\rangle\!\langle-\rvert.
+$$ {#eq-degenerate-projectors}
+
+A measurement reporting only the eigenvalue cannot distinguish the two basis vectors inside the $+1$ eigenspace. The event is therefore the whole subspace, and @eq-projection-update preserves the coherent component of the state within that subspace.
+
+## Summary {#sec-lecture-02-summary}
+
+The double-slit experiment shows that quantum alternatives combine through amplitudes when no record distinguishes them. The mathematical postulates make this statement precise:
+
+1. A pure state is a unit vector in a complex Hilbert space.
+2. Closed-system evolution is unitary.
+3. A physical observable is Hermitian and therefore has a spectral decomposition.
+4. Projective measurement follows the Born rule and updates the state by projection onto the observed eigenspace.
+
+These postulates supply the language needed to study single-qubit systems in the next lecture.

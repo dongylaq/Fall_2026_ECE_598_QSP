@@ -1,0 +1,370 @@
+# Lecture 4: Multi-Qubit Systems and Entanglement {#sec-lecture-04}
+
+*Class date: September 14, 2026*
+
+A multi-qubit system is not obtained by listing the states of its qubits separately. Its state belongs to a tensor-product space, which contains both product states and entangled states. We first develop the tensor-product description, then introduce the controlled-NOT, controlled-$Z$, and SWAP gates. These ingredients allow us to create Bell states and to see why an unknown quantum state cannot be copied by a universal quantum operation.
+
+## Two qubits and the tensor product {#sec-two-qubits-tensor-product}
+
+Two classical bits have four possible configurations. A two-qubit state therefore requires a four-dimensional complex vector space with computational basis
+
+$$
+\lvert00\rangle=\begin{pmatrix}1\\0\\0\\0\end{pmatrix},
+\quad
+\lvert01\rangle=\begin{pmatrix}0\\1\\0\\0\end{pmatrix},
+\quad
+\lvert10\rangle=\begin{pmatrix}0\\0\\1\\0\end{pmatrix},
+\quad
+\lvert11\rangle=\begin{pmatrix}0\\0\\0\\1\end{pmatrix}.
+$$ {#eq-two-qubit-basis}
+
+The tensor product constructs this joint state space from the two single-qubit spaces.
+
+::: {#def-vector-tensor-product}
+## Tensor product of vectors
+
+For $\lvert v\rangle=(a,b)^T\in\mathbb{C}^2$ and $\lvert w\rangle=(c,d)^T\in\mathbb{C}^2$, their tensor product is
+
+$$
+\lvert v\rangle\otimes\lvert w\rangle
+=\begin{pmatrix}a\lvert w\rangle\\b\lvert w\rangle\end{pmatrix}
+=\begin{pmatrix}ac\\ad\\bc\\bd\end{pmatrix}
+\in\mathbb{C}^4.
+$$ {#eq-two-vector-tensor-product}
+:::
+
+For example,
+
+$$
+\lvert1\rangle\otimes\lvert0\rangle
+=\begin{pmatrix}0\\1\end{pmatrix}\otimes\begin{pmatrix}1\\0\end{pmatrix}
+=\begin{pmatrix}0\\0\\1\\0\end{pmatrix}
+=\lvert10\rangle.
+$$ {#eq-tensor-product-example}
+
+More generally, if $\lvert v\rangle\in\mathbb{C}^n$ and $\lvert w\rangle\in\mathbb{C}^m$, then $\lvert v\rangle\otimes\lvert w\rangle\in\mathbb{C}^{nm}$. An $n$-qubit system has $2^n$ computational-basis states, indexed by binary strings $x\in\{0,1\}^n$.
+
+An arbitrary two-qubit pure state has the form
+
+$$
+\lvert\psi\rangle
+=\alpha_{00}\lvert00\rangle+\alpha_{01}\lvert01\rangle
++\alpha_{10}\lvert10\rangle+\alpha_{11}\lvert11\rangle,
+\qquad
+\sum_{a,b\in\{0,1\}}\lvert\alpha_{ab}\rvert^2=1.
+$$ {#eq-general-two-qubit-state}
+
+If $A$ acts on the first qubit and $B$ acts on the second, their joint action is $A\otimes B$. On a product state,
+
+$$
+(A\otimes B)(\lvert v\rangle\otimes\lvert w\rangle)
+=(A\lvert v\rangle)\otimes(B\lvert w\rangle).
+$$ {#eq-tensor-product-operator-action}
+
+Thus $\mathrm{H}\otimes I$ applies a Hadamard gate only to the first qubit, while $I\otimes X$ applies an $X$ gate only to the second qubit.
+
+## Two-qubit gates {#sec-two-qubit-gates}
+
+Single-qubit gates act independently on different subsystems. Two-qubit gates can instead make the evolution of one qubit depend on the state of another.
+
+### Controlled-NOT gate {#sec-cnot-gate}
+
+The controlled-NOT gate uses the first qubit as the control and the second as the target. If the control is $\lvert0\rangle$, it leaves the target unchanged; if the control is $\lvert1\rangle$, it applies $X$ to the target. Equivalently,
+
+$$
+\operatorname{CNOT}\lvert a,b\rangle=\lvert a,a\oplus b\rangle,
+\qquad a,b\in\{0,1\},
+$$ {#eq-cnot-basis-action}
+
+where $\oplus$ denotes addition modulo two. In the computational basis ordered as in @eq-two-qubit-basis,
+
+$$
+\operatorname{CNOT}
+=\lvert0\rangle\langle0\rvert\otimes I
++\lvert1\rangle\langle1\rvert\otimes X
+=\begin{pmatrix}
+1&0&0&0\\
+0&1&0&0\\
+0&0&0&1\\
+0&0&1&0
+\end{pmatrix}.
+$$ {#eq-cnot-matrix}
+
+::: {#fig-cnot-circuit}
+```{.tikz}
+%%| filename: cnot-circuit
+%%| alt: A two-qubit controlled-NOT circuit with the first qubit as control and the second as target.
+\begin{tikzpicture}[thick]
+  \draw (0,0) -- (4,0);
+  \draw (0,-1) -- (4,-1);
+  \node[left] at (0,0) {$A$};
+  \node[left] at (0,-1) {$B$};
+  \fill (2,0) circle (2.2pt);
+  \draw (2,0) -- (2,-1);
+  \draw (2,-1) circle (7pt);
+  \draw (2,-1.23) -- (2,-0.77);
+  \draw (1.77,-1) -- (2.23,-1);
+\end{tikzpicture}
+```
+
+The circuit symbol for a controlled-NOT gate. The filled dot marks the control qubit, and $\oplus$ marks the target qubit.
+:::
+
+For computational-basis inputs,
+
+$$
+\operatorname{CNOT}\lvert01\rangle=\lvert01\rangle,
+\qquad
+\operatorname{CNOT}\lvert11\rangle=\lvert10\rangle.
+$$ {#eq-cnot-examples}
+
+Linearity determines the action on every superposition. For example,
+
+$$
+\operatorname{CNOT}\left(\frac{\lvert00\rangle+\lvert11\rangle}{\sqrt{2}}\right)
+=\frac{\lvert00\rangle+\lvert10\rangle}{\sqrt{2}}
+=\lvert+\rangle\otimes\lvert0\rangle.
+$$ {#eq-cnot-disentangles-bell}
+
+This example also shows that the same gate can convert an entangled state into a product state. Since $\operatorname{CNOT}^2=I$, applying it in the reverse direction creates the Bell state $(\lvert00\rangle+\lvert11\rangle)/\sqrt{2}$ from $\lvert+\rangle\otimes\lvert0\rangle$.
+
+### Controlled-$Z$ and SWAP gates {#sec-cz-swap-gates}
+
+The controlled-$Z$ gate applies $Z$ to the target when the control is $\lvert1\rangle$:
+
+$$
+\operatorname{CZ}
+=\lvert0\rangle\langle0\rvert\otimes I
++\lvert1\rangle\langle1\rvert\otimes Z
+=\begin{pmatrix}
+1&0&0&0\\
+0&1&0&0\\
+0&0&1&0\\
+0&0&0&-1
+\end{pmatrix}.
+$$ {#eq-cz-matrix}
+
+It leaves $\lvert00\rangle$, $\lvert01\rangle$, and $\lvert10\rangle$ unchanged and multiplies $\lvert11\rangle$ by $-1$.
+
+The SWAP gate exchanges the states of two qubits,
+
+$$
+\operatorname{SWAP}(\lvert\alpha\rangle_A\otimes\lvert\beta\rangle_B)
+=\lvert\beta\rangle_A\otimes\lvert\alpha\rangle_B,
+$$ {#eq-swap-action}
+
+and has matrix representation
+
+$$
+\operatorname{SWAP}
+=\begin{pmatrix}
+1&0&0&0\\
+0&0&1&0\\
+0&1&0&0\\
+0&0&0&1
+\end{pmatrix}.
+$$ {#eq-swap-matrix}
+
+The gate moves quantum information without copying it. It can be decomposed into three controlled-NOT gates,
+
+$$
+\operatorname{SWAP}_{AB}
+=\operatorname{CNOT}_{A\to B}\operatorname{CNOT}_{B\to A}\operatorname{CNOT}_{A\to B}.
+$$ {#eq-swap-cnot-decomposition}
+
+::: {#fig-swap-cnot-decomposition}
+```{.tikz}
+%%| filename: swap-cnot-decomposition
+%%| alt: A SWAP gate on the left equals a circuit of three controlled-NOT gates with alternating control and target qubits on the right.
+\begin{tikzpicture}[thick]
+  \draw (0,0) -- (2,0);
+  \draw (0,-1) -- (2,-1);
+  \node[left] at (0,0) {$A$};
+  \node[left] at (0,-1) {$B$};
+  \draw (1,0) -- (1,-1);
+  \node[fill=white,inner sep=0pt] at (1,0) {$\times$};
+  \node[fill=white,inner sep=0pt] at (1,-1) {$\times$};
+
+  \node at (2.7,-0.5) {$=$};
+
+  \draw (3.5,0) -- (8.5,0);
+  \draw (3.5,-1) -- (8.5,-1);
+  \node[left] at (3.5,0) {$A$};
+  \node[left] at (3.5,-1) {$B$};
+
+  \fill (4.5,0) circle (2.2pt);
+  \draw (4.5,0) -- (4.5,-1);
+  \draw (4.5,-1) circle (7pt);
+  \draw (4.5,-1.23) -- (4.5,-0.77);
+  \draw (4.27,-1) -- (4.73,-1);
+
+  \fill (6,-1) circle (2.2pt);
+  \draw (6,-1) -- (6,0);
+  \draw (6,0) circle (7pt);
+  \draw (6,-0.23) -- (6,0.23);
+  \draw (5.77,0) -- (6.23,0);
+
+  \fill (7.5,0) circle (2.2pt);
+  \draw (7.5,0) -- (7.5,-1);
+  \draw (7.5,-1) circle (7pt);
+  \draw (7.5,-1.23) -- (7.5,-0.77);
+  \draw (7.27,-1) -- (7.73,-1);
+\end{tikzpicture}
+```
+
+The circuit identity in @eq-swap-cnot-decomposition. Reading the right-hand circuit from left to right, the three gates are $\operatorname{CNOT}_{A\to B}$, $\operatorname{CNOT}_{B\to A}$, and $\operatorname{CNOT}_{A\to B}$.
+:::
+
+## Separable and entangled states {#sec-separable-entangled-states}
+
+The tensor-product space contains states that cannot be specified by assigning an independent pure state to each subsystem.
+
+::: {#def-separable-pure-state}
+## Separable pure state
+
+A pure state $\lvert\psi\rangle\in\mathcal{H}_A\otimes\mathcal{H}_B$ is separable if there exist states $\lvert\psi_A\rangle\in\mathcal{H}_A$ and $\lvert\psi_B\rangle\in\mathcal{H}_B$ such that
+
+$$
+\lvert\psi\rangle=\lvert\psi_A\rangle\otimes\lvert\psi_B\rangle.
+$$ {#eq-separable-pure-state}
+
+A pure state that is not separable is entangled.
+:::
+
+For example, the equally weighted superposition of all four computational-basis states is separable:
+
+$$
+\frac12(\lvert00\rangle+\lvert01\rangle+\lvert10\rangle+\lvert11\rangle)
+=\left(\frac{\lvert0\rangle+\lvert1\rangle}{\sqrt{2}}\right)
+\otimes
+\left(\frac{\lvert0\rangle+\lvert1\rangle}{\sqrt{2}}\right)
+=\lvert+\rangle\otimes\lvert+\rangle.
+$$ {#eq-separable-four-term-state}
+
+For the general state in @eq-general-two-qubit-state, separability is equivalent to
+
+$$
+\alpha_{00}\alpha_{11}-\alpha_{01}\alpha_{10}=0.
+$$ {#eq-two-qubit-separability-condition}
+
+Indeed, the four amplitudes of a product state $(a\lvert0\rangle+b\lvert1\rangle)\otimes(c\lvert0\rangle+d\lvert1\rangle)$ are $ac$, $ad$, $bc$, and $bd$, which satisfy @eq-two-qubit-separability-condition. Conversely, the same condition says that the $2\times2$ coefficient matrix has rank one and therefore factors into two vectors.
+
+## Bell states {#sec-bell-states}
+
+The four Bell states are
+
+$$
+\lvert\Phi^+\rangle=\frac{\lvert00\rangle+\lvert11\rangle}{\sqrt{2}},
+\qquad
+\lvert\Phi^-\rangle=\frac{\lvert00\rangle-\lvert11\rangle}{\sqrt{2}},
+$$
+
+$$
+\lvert\Psi^+\rangle=\frac{\lvert01\rangle+\lvert10\rangle}{\sqrt{2}},
+\qquad
+\lvert\Psi^-\rangle=\frac{\lvert01\rangle-\lvert10\rangle}{\sqrt{2}}.
+$$ {#eq-bell-states}
+
+Each Bell state violates @eq-two-qubit-separability-condition and is therefore entangled. If the first qubit of $\lvert\Phi^+\rangle$ is measured in the computational basis, the two possible outcomes occur with equal probability:
+
+$$
+\Pr(A=0)=\Pr(A=1)=\frac12.
+$$ {#eq-bell-first-qubit-probabilities}
+
+Conditioned on outcome $0$, the joint state becomes $\lvert00\rangle$ and qubit $B$ is in $\lvert0\rangle$. Conditioned on outcome $1$, the joint state becomes $\lvert11\rangle$ and qubit $B$ is in $\lvert1\rangle$. The individual result is random, but the two measurement outcomes are perfectly correlated.
+
+### Preparing a Bell state {#sec-preparing-bell-state}
+
+Starting from $\lvert00\rangle$, apply $\mathrm{H}$ to the first qubit and then use it as the control of a controlled-NOT gate.
+
+::: {#fig-bell-state-preparation}
+```{.tikz}
+%%| filename: bell-state-preparation
+%%| additionalPackages: \usepackage{amsmath}
+%%| alt: Two qubits initialized in zero pass through a Hadamard gate and a controlled-NOT gate to prepare a Bell state.
+\begin{tikzpicture}[thick]
+  \draw (0,0) -- (5,0);
+  \draw (0,-1) -- (5,-1);
+  \node[left] at (0,0) {$\lvert0\rangle_A$};
+  \node[left] at (0,-1) {$\lvert0\rangle_B$};
+  \draw[fill=white] (1.15,-0.28) rectangle (1.75,0.28);
+  \node at (1.45,0) {$\mathrm{H}$};
+  \fill (3,0) circle (2.2pt);
+  \draw (3,0) -- (3,-1);
+  \draw (3,-1) circle (7pt);
+  \draw (3,-1.23) -- (3,-0.77);
+  \draw (2.77,-1) -- (3.23,-1);
+  \node[right] at (5,0) {$\lvert\Phi^+\rangle$};
+\end{tikzpicture}
+```
+
+A Hadamard gate followed by a controlled-NOT gate prepares $\lvert\Phi^+\rangle$ from $\lvert00\rangle$.
+:::
+
+After the Hadamard gate, the state is
+
+$$
+(\mathrm{H}\otimes I)\lvert00\rangle
+=\lvert+\rangle\otimes\lvert0\rangle
+=\frac{\lvert00\rangle+\lvert10\rangle}{\sqrt{2}}.
+$$ {#eq-bell-preparation-after-hadamard}
+
+The controlled-NOT gate then gives
+
+$$
+\operatorname{CNOT}\left(\frac{\lvert00\rangle+\lvert10\rangle}{\sqrt{2}}\right)
+=\frac{\lvert00\rangle+\lvert11\rangle}{\sqrt{2}}
+=\lvert\Phi^+\rangle.
+$$ {#eq-bell-preparation-after-cnot}
+
+The Hadamard gate first creates a superposition, and the controlled-NOT gate correlates the target with the two branches of that superposition. The resulting state cannot be factored into separate states of $A$ and $B$.
+
+## The no-cloning theorem {#sec-no-cloning}
+
+A classical bit can be copied by a controlled-NOT gate when the target begins in $\lvert0\rangle$. For example, $\lvert0\rangle\lvert0\rangle\mapsto\lvert0\rangle\lvert0\rangle$ and $\lvert1\rangle\lvert0\rangle\mapsto\lvert1\rangle\lvert1\rangle$. The same operation cannot copy an arbitrary superposition.
+
+::: {#thm-no-cloning}
+## No-cloning theorem
+
+There is no unitary operator $U$ and fixed blank state $\lvert0\rangle$ such that
+
+$$
+U(\lvert\psi\rangle\otimes\lvert0\rangle)
+=\lvert\psi\rangle\otimes\lvert\psi\rangle
+$$ {#eq-universal-cloning-map}
+
+for every state $\lvert\psi\rangle$.
+:::
+
+::: {.proof}
+Suppose that such a unitary copies both computational-basis states. Then
+
+$$
+U\lvert00\rangle=\lvert00\rangle,
+\qquad
+U\lvert10\rangle=\lvert11\rangle.
+$$ {#eq-cloning-basis-assumption}
+
+By linearity, its action on $\lvert+\rangle\otimes\lvert0\rangle$ must be
+
+$$
+U(\lvert+\rangle\otimes\lvert0\rangle)
+=\frac{U\lvert00\rangle+U\lvert10\rangle}{\sqrt{2}}
+=\frac{\lvert00\rangle+\lvert11\rangle}{\sqrt{2}}.
+$$ {#eq-cloning-linearity-output}
+
+Universal cloning would instead require
+
+$$
+\lvert+\rangle\otimes\lvert+\rangle
+=\frac{\lvert00\rangle+\lvert01\rangle+\lvert10\rangle+\lvert11\rangle}{2}.
+$$ {#eq-cloning-required-output}
+
+The states in @eq-cloning-linearity-output and @eq-cloning-required-output are different, which is a contradiction.
+:::
+
+The obstruction is linearity: copying the components of a superposition produces an entangled superposition of copies, not the tensor product of the original superposition with itself. This restriction will matter in the next lecture, where quantum information is transferred using entanglement and classical communication rather than duplicated.
+
+## Summary {#sec-lecture-04-summary}
+
+Tensor products describe the state space and local operations of a multi-qubit system. Controlled gates make one qubit's evolution depend on another and can create entanglement from product states. Bell states exhibit correlations that cannot be represented by independent pure states of the two qubits, while the no-cloning theorem shows that linear quantum evolution cannot universally copy an unknown state.

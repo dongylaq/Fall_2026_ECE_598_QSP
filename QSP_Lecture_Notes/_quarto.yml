@@ -1,0 +1,68 @@
+project:
+  type: book
+  output-dir: _book
+
+book:
+  title: "Quantum Signal Processing"
+  subtitle: "ECE 598 Lecture Notes, Fall 2026"
+  author:
+    - name: |
+        Yulong Dong\
+        Assistant Professor\
+        Department of EECS\
+        Department of Mathematics (by courtesy)\
+        University of Michigan
+  site-url: https://dongylaq.github.io/Fall_2026_ECE_598_QSP/
+  repo-url: https://github.com/dongylaq/Fall_2026_ECE_598_QSP
+  repo-actions: [edit, issue]
+  search: true
+  page-navigation: true
+  chapters:
+    - index.qmd
+    - lectures/lecture-01.qmd
+    - lectures/lecture-02.qmd
+    - lectures/lecture-03.qmd
+    - lectures/lecture-04.qmd
+    - lectures/lecture-05.qmd
+    - lectures/lecture-06.qmd
+    - references.qmd
+
+bibliography: references.bib
+
+crossref:
+  chapters: true
+  fig-title: Figure
+  tbl-title: Table
+  eq-prefix: Equation
+  thm-title: Theorem
+  lem-title: Lemma
+  cor-title: Corollary
+  def-title: Definition
+
+filters:
+  - tikz
+
+tikz:
+  tex-engine: pdflatex
+  svg-engine: pdftocairo
+  embed: inline
+  latex-passthrough: true
+  cache: false
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    number-sections: true
+    toc: true
+    toc-depth: 3
+    code-copy: true
+    link-external-newwindow: true
+  pdf:
+    documentclass: scrreprt
+    papersize: letter
+    number-sections: true
+    toc: true
+    toc-depth: 3
+    colorlinks: true
+    include-in-header: macros.tex

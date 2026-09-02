@@ -1,0 +1,162 @@
+# Lecture 5: Quantum Teleportation {#sec-lecture-05}
+
+*Class date: September 19, 2026*
+
+Quantum teleportation transfers an unknown qubit state from Alice to Bob without sending the physical qubit that initially carries it. The protocol combines a shared Bell pair, a two-qubit measurement by Alice, two classical bits, and a correction by Bob. The state is transferred rather than copied: Alice's original state is destroyed by measurement, in agreement with the no-cloning theorem.
+
+## The teleportation task {#sec-teleportation-task}
+
+Alice holds an unknown state
+
+$$
+\lvert\psi\rangle_1=\alpha\lvert0\rangle_1+\beta\lvert1\rangle_1,
+\qquad \lvert\alpha\rvert^2+\lvert\beta\rvert^2=1.
+$$ {#eq-teleportation-input-state}
+
+Alice and Bob also share the Bell state
+
+$$
+\lvert\Phi^+\rangle_{23}=\frac{\lvert00\rangle_{23}+\lvert11\rangle_{23}}{\sqrt{2}},
+$$ {#eq-teleportation-shared-bell-state}
+
+where Alice holds qubit $2$ and Bob holds qubit $3$. The initial three-qubit state is therefore
+
+$$
+\lvert\Psi_0\rangle
+=\lvert\psi\rangle_1\otimes\lvert\Phi^+\rangle_{23}.
+$$ {#eq-teleportation-initial-state}
+
+The entangled pair is a resource prepared before the protocol begins. It does not reveal $\alpha$ or $\beta$ and, by itself, does not transmit information from Alice to Bob.
+
+## The teleportation circuit {#sec-teleportation-circuit}
+
+Alice applies a controlled-NOT gate from qubit $1$ to qubit $2$, followed by a Hadamard gate on qubit $1$. She then measures both qubits in the computational basis, obtaining bits $m_1$ and $m_2$. Bob applies $X^{m_2}$ and then $Z^{m_1}$ to qubit $3$.
+
+::: {#fig-teleportation-circuit}
+```{.tikz}
+%%| filename: teleportation-circuit
+%%| additionalPackages: \usepackage{amsmath}
+%%| alt: A three-qubit teleportation circuit in which double classical wires connect Alice's two measurements to Bob's Pauli correction gates.
+\begin{tikzpicture}[thick]
+  \draw (0,0) -- (3.35,0);
+  \draw (0,-1) -- (3.35,-1);
+  \draw (0,-2) -- (7.8,-2);
+  \node[left] at (0,0) {$\lvert\psi\rangle_1$};
+  \node[left] at (0,-1) {$q_2$};
+  \node[left] at (0,-2) {$q_3$};
+
+  \fill (1.2,0) circle (2.2pt);
+  \draw (1.2,0) -- (1.2,-1);
+  \draw (1.2,-1) circle (7pt);
+  \draw (1.2,-1.23) -- (1.2,-0.77);
+  \draw (0.97,-1) -- (1.43,-1);
+
+  \draw[fill=white] (2,-0.28) rectangle (2.65,0.28);
+  \node at (2.325,0) {$\mathrm{H}$};
+
+  \draw[fill=white] (3.35,-0.28) rectangle (4.05,0.28);
+  \draw[fill=white] (3.35,-1.28) rectangle (4.05,-0.72);
+  \node at (3.7,0) {$M$};
+  \node at (3.7,-1) {$M$};
+  \node[above] at (3.7,0.28) {$m_1$};
+  \node[above] at (3.7,-0.72) {$m_2$};
+
+  \draw[fill=white] (5,-2.28) rectangle (5.8,-1.72);
+  \draw[fill=white] (6.25,-2.28) rectangle (7.05,-1.72);
+  \node at (5.4,-2) {$X$};
+  \node at (6.65,-2) {$Z$};
+
+  % Classical wires follow the quantikz convention: two parallel solid lines.
+  \draw[line width=0.35pt] (4.05,-0.97) -- (5.37,-0.97) -- (5.37,-1.72);
+  \draw[line width=0.35pt] (4.05,-1.03) -- (5.43,-1.03) -- (5.43,-1.72);
+  \draw[line width=0.35pt] (4.05,0.03) -- (6.62,0.03) -- (6.62,-1.72);
+  \draw[line width=0.35pt] (4.05,-0.03) -- (6.68,-0.03) -- (6.68,-1.72);
+  \node[right] at (7.8,-2) {$\lvert\psi\rangle$};
+\end{tikzpicture}
+```
+
+The quantum teleportation protocol. The double lines carry the classical measurement outcomes to Bob's correction gates.
+:::
+
+The circuit does not transmit the amplitudes $\alpha$ and $\beta$ as classical data. Alice sends only the two random bits $(m_1,m_2)$, and the shared entanglement makes those bits sufficient for Bob to select the correct Pauli operation.
+
+## State evolution {#sec-teleportation-state-evolution}
+
+Expanding @eq-teleportation-initial-state in the computational basis gives
+
+$$
+\lvert\Psi_0\rangle
+=\frac{1}{\sqrt{2}}\left(
+\alpha\lvert000\rangle+\alpha\lvert011\rangle
++\beta\lvert100\rangle+\beta\lvert111\rangle
+\right).
+$$ {#eq-teleportation-initial-expansion}
+
+After the controlled-NOT gate from qubit $1$ to qubit $2$, the state becomes
+
+$$
+\lvert\Psi_1\rangle
+=\frac{1}{\sqrt{2}}\left(
+\alpha\lvert000\rangle+\alpha\lvert011\rangle
++\beta\lvert110\rangle+\beta\lvert101\rangle
+\right).
+$$ {#eq-teleportation-after-cnot}
+
+Applying $\mathrm{H}$ to qubit $1$ and grouping the state by Alice's two computational-basis states gives the central identity
+
+$$
+\lvert\Psi_2\rangle
+=\frac12\left(
+\lvert00\rangle_{12}\lvert\psi\rangle_3
++\lvert01\rangle_{12}X\lvert\psi\rangle_3
++\lvert10\rangle_{12}Z\lvert\psi\rangle_3
++\lvert11\rangle_{12}XZ\lvert\psi\rangle_3
+\right).
+$$ {#eq-teleportation-decomposition}
+
+The four branches in @eq-teleportation-decomposition are orthogonal and have equal norm. Alice therefore obtains each outcome with probability $1/4$. Bob's state and the required correction are
+
+| $(m_1,m_2)$ | Bob's state before correction | Bob's correction |
+|---|---|---|
+| $(0,0)$ | $\lvert\psi\rangle$ | $I$ |
+| $(0,1)$ | $X\lvert\psi\rangle$ | $X$ |
+| $(1,0)$ | $Z\lvert\psi\rangle$ | $Z$ |
+| $(1,1)$ | $XZ\lvert\psi\rangle$ | $ZX$ |
+
+In every branch, Bob applies $Z^{m_1}X^{m_2}$ and obtains
+
+$$
+Z^{m_1}X^{m_2}X^{m_2}Z^{m_1}\lvert\psi\rangle
+=\lvert\psi\rangle.
+$$ {#eq-teleportation-correction}
+
+The order of the last two corrections matters algebraically when $m_1=m_2=1$, although reversing them changes the state only by a physically irrelevant global phase.
+
+## Why teleportation does not violate no-cloning {#sec-teleportation-no-cloning}
+
+After Alice's measurement, her two qubits are in the basis state $\lvert m_1m_2\rangle$ rather than the unknown state $\lvert\psi\rangle$. The original copy has therefore been destroyed. Bob cannot recover $\lvert\psi\rangle$ until Alice's two classical bits arrive, so the protocol also does not enable faster-than-light communication.
+
+The first two gates of teleportation reverse the Bell-state preparation circuit from @fig-bell-state-preparation. Bell-state preparation maps computational-basis information into entangled states; the controlled-NOT followed by $\mathrm{H}$ maps that Bell-basis information back into the computational basis so that Alice can read two classical bits.
+
+## Deferred measurement {#sec-deferred-measurement}
+
+The measurement and classically controlled corrections can be replaced by coherent controlled gates. Instead of measuring first, use qubit $2$ to control $X$ on Bob's qubit and qubit $1$ to control $Z$ on Bob's qubit. Applying these gates to @eq-teleportation-decomposition gives
+
+$$
+\frac12\left(\lvert00\rangle+\lvert01\rangle+\lvert10\rangle+\lvert11\rangle\right)_{12}\otimes\lvert\psi\rangle_3
+=\lvert++\rangle_{12}\otimes\lvert\psi\rangle_3.
+$$ {#eq-coherent-teleportation-output}
+
+Bob's qubit is now $\lvert\psi\rangle$ before any measurement occurs. Measuring Alice's qubits afterward cannot change the state of Bob's separated register.
+
+::: {#thm-deferred-measurement}
+## Deferred measurement principle
+
+A measurement whose classical outcome controls later quantum gates may be postponed by replacing each classically controlled gate with the corresponding coherently controlled gate. The measurement may then be performed after those gates without changing the final measurement statistics.
+:::
+
+The deferred-measurement viewpoint separates two roles of measurement. Measurement produces classical information when the outcome is needed externally, but coherent control can retain the same branch information inside a larger quantum circuit.
+
+## Summary {#sec-lecture-05-summary}
+
+Quantum teleportation transfers an arbitrary qubit using one shared Bell pair and two classical bits. Alice's Bell-basis measurement leaves Bob with one of four Pauli variants of the input, and her two-bit message tells Bob which correction to apply. The protocol respects no-cloning because the original state is destroyed, and the deferred measurement principle shows how its measurement-controlled operations can be represented coherently.
