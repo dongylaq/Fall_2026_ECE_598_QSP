@@ -31,12 +31,19 @@ jobs:
       - name: Install vector-diagram dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install --yes poppler-utils
+          sudo apt-get install --yes poppler-utils qpdf
           echo "$HOME/.TinyTeX/bin/x86_64-linux" >> "$GITHUB_PATH"
           "$HOME/.TinyTeX/bin/x86_64-linux/tlmgr" install standalone pgf braket quantikz
 
       - name: Render HTML and PDF books
         run: quarto render QSP_Lecture_Notes
+
+      - name: Encrypt PDF book
+        env:
+          PDF_PASSWORD: ${{ secrets.PDF_PASSWORD }}
+        run: |
+          qpdf --encrypt "$PDF_PASSWORD" "$PDF_PASSWORD" 256 -- QSP_Lecture_Notes/_book/Quantum-Signal-Processing.pdf QSP_Lecture_Notes/_book/Quantum-Signal-Processing.encrypted.pdf
+          mv QSP_Lecture_Notes/_book/Quantum-Signal-Processing.encrypted.pdf QSP_Lecture_Notes/_book/Quantum-Signal-Processing.pdf
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
