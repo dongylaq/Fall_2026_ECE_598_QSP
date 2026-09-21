@@ -1,0 +1,334 @@
+# Lecture 8: Quantum Channels and Error Models {#sec-lecture-08}
+
+*Class date: September 28, 2026*
+
+A closed quantum system evolves unitarily, but a subsystem interacting with an unobserved environment generally does not. We first obtain subsystem states by tracing out the environment, then determine the conditions required of a legitimate subsystem evolution. This leads to completely positive trace-preserving maps, their Kraus representations, standard qubit error models, and the unitary dilation of a noisy channel.
+
+## From closed systems to subsystems {#sec-closed-to-open-systems}
+
+For a closed system with Hamiltonian $H$, the density operator evolves as
+
+$$
+\rho(t)=U(t)\rho(0)U^{\dagger}(t),
+\qquad
+U(t)=e^{-iHt}.
+$$ {#eq-closed-density-evolution}
+
+For a short time step $\Delta t$,
+
+$$
+U(\Delta t)=I-iH\Delta t+O(\Delta t^2).
+$$ {#eq-short-time-unitary-evolution}
+
+Consequently,
+
+$$
+\rho(t+\Delta t)
+=\rho(t)-i\Delta t\bigl(H\rho(t)-\rho(t)H\bigr)+O(\Delta t^2).
+$$ {#eq-short-time-density-evolution}
+
+Dividing by $\Delta t$ and taking the limit gives the von Neumann equation
+
+$$
+\frac{d\rho(t)}{dt}=-i[H,\rho(t)].
+$$ {#eq-von-neumann-equation}
+
+Now divide a larger system into the subsystem $S$ that we observe and an environment $E$ that we do not. If the joint state is $\rho_{SE}$, the state accessible on $S$ is obtained by tracing out $E$.
+
+::: {#def-partial-trace}
+## Partial trace
+
+For operators $A$ on $S$ and $B$ on $E$, the partial trace over $E$ is defined by
+
+$$
+\operatorname{Tr}_E(A\otimes B)=A\operatorname{Tr}(B)
+$$ {#eq-partial-trace-product}
+
+and extended linearly to all operators on $S\otimes E$. The reduced state of $S$ is $\rho_S=\operatorname{Tr}_E(\rho_{SE})$.
+:::
+
+Equivalently, for any orthonormal basis $\{\lvert e_j\rangle\}_j$ of the environment,
+
+$$
+\operatorname{Tr}_E(\rho_{SE})
+=\sum_j (I_S\otimes\langle e_j\rvert)\rho_{SE}(I_S\otimes\lvert e_j\rangle).
+$$ {#eq-partial-trace-basis-formula}
+
+For the Bell state $\lvert\Phi^+\rangle=(\lvert00\rangle+\lvert11\rangle)/\sqrt{2}$,
+
+$$
+\lvert\Phi^+\rangle\langle\Phi^+\rvert
+=\frac12\left(
+\lvert00\rangle\langle00\rvert
++\lvert00\rangle\langle11\rvert
++\lvert11\rangle\langle00\rvert
++\lvert11\rangle\langle11\rvert
+\right),
+$$ {#eq-bell-density-expansion}
+
+and therefore
+
+$$
+\operatorname{Tr}_E(\lvert\Phi^+\rangle\langle\Phi^+\rvert)
+=\frac12\left(\lvert0\rangle\langle0\rvert+\lvert1\rangle\langle1\rvert\right)
+=\frac{I}{2}.
+$$ {#eq-bell-reduced-state}
+
+The joint state is pure, yet each subsystem is maximally mixed. This mixedness arises from entanglement rather than ignorance about a classical preparation.
+
+If the system and environment begin in $\rho_S\otimes\rho_E$ and evolve jointly under a unitary $U_{SE}$, then
+
+$$
+\mathcal{E}(\rho_S)
+=\operatorname{Tr}_E\left(U_{SE}(\rho_S\otimes\rho_E)U_{SE}^{\dagger}\right)
+$$ {#eq-channel-from-environment}
+
+defines the effective evolution seen by the system.
+
+## Quantum channels and complete positivity {#sec-quantum-channels-cptp}
+
+::: {#def-quantum-channel}
+## Quantum channel
+
+A quantum channel is a linear map $\mathcal{E}:\mathcal{L}(\mathcal{H}_{\mathrm{in}})\to\mathcal{L}(\mathcal{H}_{\mathrm{out}})$ that is completely positive and trace preserving.
+:::
+
+Each part of the definition has a physical role:
+
+1. **Trace preservation:** $\operatorname{Tr}(\mathcal{E}(\rho))=1$ for every input state.
+2. **Linearity:** $\mathcal{E}(a\rho_1+b\rho_2)=a\mathcal{E}(\rho_1)+b\mathcal{E}(\rho_2)$. In particular, the output cannot depend on which ensemble decomposition represents the same density matrix.
+3. **Complete positivity:** the map remains positive even when it acts on one part of an entangled state.
+
+Positivity alone is insufficient when the input can be entangled with an untouched reference system. Complete positivity requires
+
+$$
+(\mathcal{I}_R\otimes\mathcal{E})(\rho_{RS})\succeq0
+$$ {#eq-complete-positivity-condition}
+
+for every reference system $R$ and every joint positive semidefinite operator $\rho_{RS}$.
+
+The transpose map $T(\rho)=\rho^T$ is positive and trace preserving. However, applying it to one half of a Bell state gives
+
+$$
+(\mathcal{I}\otimes T)(\lvert\Phi^+\rangle\langle\Phi^+\rvert)
+=\frac12\left(
+\lvert00\rangle\langle00\rvert
++\lvert01\rangle\langle10\rvert
++\lvert10\rangle\langle01\rvert
++\lvert11\rangle\langle11\rvert
+\right),
+$$ {#eq-bell-partial-transpose}
+
+whose eigenvalues are $1/2,1/2,1/2,-1/2$. The transpose is therefore not completely positive and cannot describe a physical operation on an arbitrary subsystem.
+
+In the computational basis, @eq-bell-partial-transpose is
+
+$$
+\frac12
+\begin{pmatrix}
+1&0&0&0\\
+0&0&1&0\\
+0&1&0&0\\
+0&0&0&1
+\end{pmatrix}.
+$$ {#eq-bell-partial-transpose-matrix}
+
+The eigenvector $(\lvert01\rangle-\lvert10\rangle)/\sqrt{2}$ has eigenvalue $-1/2$, displaying the failure of positivity directly.
+
+## Kraus representations {#sec-kraus-representations}
+
+::: {#thm-kraus-representation}
+## Kraus representation theorem
+
+A linear map $\mathcal{E}$ is completely positive if and only if it can be written as
+
+$$
+\mathcal{E}(\rho)=\sum_k E_k\rho E_k^{\dagger}.
+$$ {#eq-kraus-representation}
+
+It is trace preserving if and only if
+
+$$
+\sum_k E_k^{\dagger}E_k=I.
+$$ {#eq-kraus-trace-preserving}
+:::
+
+The operators $E_k$ are Kraus operators. They are not unique: replacing them by $F_j=\sum_k u_{jk}E_k$, where $u$ is an isometry on the Kraus index, gives the same channel.
+
+The Kraus form makes complete positivity transparent. For any positive semidefinite $\rho_{RS}$,
+
+$$
+(\mathcal{I}_R\otimes\mathcal{E})(\rho_{RS})
+=\sum_k(I_R\otimes E_k)\rho_{RS}(I_R\otimes E_k^{\dagger})\succeq0.
+$$ {#eq-kraus-implies-complete-positivity}
+
+::: {.proof}
+Using cyclicity of the trace,
+
+$$
+\operatorname{Tr}(\mathcal{E}(\rho))
+=\sum_k\operatorname{Tr}(E_k\rho E_k^{\dagger})
+=\operatorname{Tr}\left(\rho\sum_kE_k^{\dagger}E_k\right).
+$$
+
+This equals $\operatorname{Tr}(\rho)$ for every $\rho$ exactly when @eq-kraus-trace-preserving holds.
+:::
+
+A channel is **unital** when $\mathcal{E}(I)=I$, equivalently
+
+$$
+\sum_kE_kE_k^{\dagger}=I.
+$$ {#eq-kraus-unital-condition}
+
+Trace preservation and unitality are different conditions. A unital qubit channel leaves $I/2$ fixed; energy relaxation generally does not. Unitary evolution is both trace preserving and unital, with one Kraus operator $E_0=U$.
+
+## Standard single-qubit noise channels {#sec-standard-noise-channels}
+
+### Dephasing {#sec-dephasing-channel}
+
+The phase-flip form of the dephasing channel is
+
+$$
+\mathcal{E}_{\mathrm{deph},p}(\rho)
+=(1-p)\rho+pZ\rho Z,
+\qquad 0\leq p\leq1.
+$$ {#eq-dephasing-channel}
+
+One Kraus representation is $E_0=\sqrt{1-p}\,I$ and $E_1=\sqrt{p}\,Z$. For
+
+$$
+\rho=\begin{pmatrix}a&b\\\overline{b}&1-a\end{pmatrix},
+$$
+
+the output is
+
+$$
+\mathcal{E}_{\mathrm{deph},p}(\rho)
+=\begin{pmatrix}
+a&(1-2p)b\\
+(1-2p)\overline{b}&1-a
+\end{pmatrix}.
+$$ {#eq-dephasing-matrix-action}
+
+The populations are unchanged, while the coherences are multiplied by $1-2p$. For $0\leq p\leq1/2$, increasing $p$ attenuates the coherences; at $p=1/2$, they vanish completely. In the Bloch ball, this complete-dephasing point maps every state to the $z$ axis while preserving its $z$ component.
+
+### Depolarizing noise {#sec-depolarizing-channel}
+
+The Pauli-error convention used in the archived notes is
+
+$$
+\mathcal{E}_{\mathrm{dep},\alpha}(\rho)
+=(1-\alpha)\rho
++\frac{\alpha}{3}\left(X\rho X+Y\rho Y+Z\rho Z\right),
+\qquad 0\leq\alpha\leq1.
+$$ {#eq-depolarizing-channel}
+
+This channel has Kraus operators
+
+$$
+E_0=\sqrt{1-\alpha}\,I,
+\qquad
+E_1=\sqrt{\frac{\alpha}{3}}\,X,
+\qquad
+E_2=\sqrt{\frac{\alpha}{3}}\,Y,
+\qquad
+E_3=\sqrt{\frac{\alpha}{3}}\,Z.
+$$ {#eq-depolarizing-kraus}
+
+For a qubit,
+
+$$
+X\rho X+Y\rho Y+Z\rho Z=2I-\rho,
+$$ {#eq-pauli-conjugation-sum}
+
+so
+
+$$
+\mathcal{E}_{\mathrm{dep},\alpha}(\rho)
+=\left(1-\frac{4\alpha}{3}\right)\rho+\frac{2\alpha}{3}I.
+$$ {#eq-depolarizing-affine-form}
+
+It maps a Bloch vector $\boldsymbol{r}$ to $(1-4\alpha/3)\boldsymbol{r}$. In particular, $\alpha=3/4$ sends every input to $I/2$. The alternative parameter $p=4\alpha/3$ gives the common form $(1-p)\rho+pI/2$.
+
+### Amplitude damping {#sec-amplitude-damping-channel}
+
+Amplitude damping models relaxation from $\lvert1\rangle$ to $\lvert0\rangle$. With damping probability $0\leq p\leq1$, choose
+
+$$
+E_0=\begin{pmatrix}1&0\\0&\sqrt{1-p}\end{pmatrix},
+\qquad
+E_1=\begin{pmatrix}0&\sqrt{p}\\0&0\end{pmatrix}.
+$$ {#eq-amplitude-damping-kraus}
+
+Since $E_0^{\dagger}E_0+E_1^{\dagger}E_1=I$, the map is trace preserving. Its action is
+
+$$
+\begin{pmatrix}a&b\\\overline{b}&1-a\end{pmatrix}
+\longmapsto
+\begin{pmatrix}
+a+p(1-a)&\sqrt{1-p}\,b\\
+\sqrt{1-p}\,\overline{b}&(1-p)(1-a)
+\end{pmatrix}.
+$$ {#eq-amplitude-damping-matrix-action}
+
+Although @eq-amplitude-damping-kraus is trace preserving, the reversed products satisfy
+
+$$
+E_0E_0^{\dagger}+E_1E_1^{\dagger}
+=\begin{pmatrix}1+p&0\\0&1-p\end{pmatrix}
+\neq I
+$$ {#eq-amplitude-damping-not-unital}
+
+unless $p=0$. The channel is therefore not unital: it moves the maximally mixed state toward $\lvert0\rangle\langle0\rvert$. On the Bloch ball,
+
+$$
+(r_x,r_y,r_z)
+\longmapsto
+\left(\sqrt{1-p}\,r_x,\sqrt{1-p}\,r_y,(1-p)r_z+p\right).
+$$ {#eq-amplitude-damping-bloch-action}
+
+## Purification and unitary dilation {#sec-purification-dilation}
+
+Every mixed state can be viewed as part of a larger pure state. For any ensemble decomposition
+
+$$
+\rho_S=\sum_jp_j\lvert\psi_j\rangle\langle\psi_j\rvert,
+$$
+
+introduce an environment with orthonormal states $\{\lvert j\rangle_E\}_j$ and define
+
+$$
+\lvert\Psi\rangle_{SE}
+=\sum_j\sqrt{p_j}\,\lvert\psi_j\rangle_S\lvert j\rangle_E.
+$$ {#eq-canonical-purification}
+
+The orthogonality of the environment labels removes the cross terms under the partial trace, giving
+
+$$
+\operatorname{Tr}_E(\lvert\Psi\rangle\langle\Psi\rvert)
+=\sum_jp_j\lvert\psi_j\rangle\langle\psi_j\rvert
+=\rho_S.
+$$ {#eq-purification-partial-trace}
+
+This construction is a purification of $\rho_S$. It is not unique: a unitary change of basis on the purifying environment changes $\lvert\Psi\rangle_{SE}$ without changing the reduced state.
+
+Every quantum channel similarly has a unitary realization on a larger space. Given Kraus operators $\{E_k\}$, choose an environment basis $\{\lvert k\rangle_E\}$ and define the isometry
+
+$$
+V\lvert\psi\rangle
+=\sum_k E_k\lvert\psi\rangle\otimes\lvert k\rangle_E.
+$$ {#eq-stinespring-isometry}
+
+The trace-preserving condition gives $V^{\dagger}V=I$. Extending $V$ to a unitary on a sufficiently large joint space yields
+
+$$
+\mathcal{E}(\rho)
+=\operatorname{Tr}_E(V\rho V^{\dagger})
+=\operatorname{Tr}_E\left(U(\rho\otimes\lvert0\rangle\langle0\rvert)U^{\dagger}\right).
+$$ {#eq-stinespring-dilation}
+
+Thus apparently irreversible noisy evolution can arise from reversible evolution followed by discarding an environment.
+
+## Summary {#sec-lecture-08-summary}
+
+Tracing out an environment turns joint unitary dynamics into a map on the observed system. Requiring this map to remain physical even on part of an entangled input leads to completely positive trace-preserving maps and their Kraus representations. Dephasing, depolarizing, and amplitude damping have distinct geometric effects on the Bloch ball, while purification and unitary dilation show that mixed states and noisy channels can always be understood within a larger pure-state, unitary description.

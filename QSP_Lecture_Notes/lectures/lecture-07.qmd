@@ -1,0 +1,182 @@
+# Lecture 7: Mixed States and Density Matrices {#sec-lecture-07}
+
+*Class date: September 23, 2026*
+
+A state vector describes a system whose quantum state is known exactly. Noise, incomplete preparation, and access to only part of a larger system require a more general description. The density matrix represents both coherent quantum superpositions and classical uncertainty about which state was prepared, while retaining the same Born-rule description of measurement.
+
+## Classical uncertainty is not a coherent superposition {#sec-mixture-versus-superposition}
+
+Suppose a source prepares $\lvert+\rangle$ with probability $1/2$ and $\lvert-\rangle$ with probability $1/2$. A computational-basis measurement gives $0$ and $1$ with equal probability. The pure state
+
+$$
+\frac{\lvert+\rangle+\lvert-\rangle}{\sqrt{2}}=\lvert0\rangle
+$$ {#eq-coherent-plus-minus-superposition}
+
+has a completely different meaning: a computational-basis measurement returns $0$ with certainty. Thus a probabilistic choice between states cannot be represented by adding their state vectors. The first preparation contains classical randomness, whereas the second contains a coherent relative phase.
+
+The distinction may be invisible to one measurement. For example, both $\lvert+\rangle$ and an equal mixture of $\lvert0\rangle$ and $\lvert1\rangle$ give a uniform computational-basis distribution. Measuring in the Hadamard basis distinguishes them: $\lvert+\rangle$ always produces the $+$ outcome, while the mixture still produces $+$ and $-$ with equal probability.
+
+## Density operators {#sec-density-operators}
+
+::: {#def-density-operator}
+## Density operator
+
+An ensemble $\{(p_j,\lvert\psi_j\rangle)\}_j$, with $p_j\geq0$ and $\sum_jp_j=1$, is represented by the density operator
+
+$$
+\rho=\sum_j p_j\lvert\psi_j\rangle\langle\psi_j\rvert.
+$$ {#eq-ensemble-density-operator}
+
+A state is **pure** if $\rho=\lvert\psi\rangle\langle\psi\rvert$ for some unit vector $\lvert\psi\rangle$. Otherwise it is **mixed**.
+:::
+
+For a pure qubit $\lvert\psi\rangle=\alpha\lvert0\rangle+\beta\lvert1\rangle$,
+
+$$
+\rho=\lvert\psi\rangle\langle\psi\rvert
+=\begin{pmatrix}
+\lvert\alpha\rvert^2&\alpha\overline{\beta}\\
+\overline{\alpha}\beta&\lvert\beta\rvert^2
+\end{pmatrix}.
+$$ {#eq-pure-qubit-density-matrix}
+
+The diagonal entries are computational-basis populations. The off-diagonal entries are coherences and record phase information. By contrast, the equally weighted mixture of $\lvert0\rangle$ and $\lvert1\rangle$ is
+
+$$
+\rho_{\mathrm{mix}}
+=\frac12\lvert0\rangle\langle0\rvert
++\frac12\lvert1\rangle\langle1\rvert
+=\frac{I}{2}.
+$$ {#eq-maximally-mixed-qubit}
+
+Although $\lvert+\rangle\langle+\rvert$ and $I/2$ have the same diagonal, the former has off-diagonal entries equal to $1/2$. Those entries distinguish coherence from classical uncertainty.
+
+## Measurement and expectation values {#sec-density-matrix-measurement}
+
+Let an observable have spectral decomposition
+
+$$
+O=\sum_k\lambda_k P_k,
+$$ {#eq-observable-spectral-decomposition}
+
+where the $P_k$ are orthogonal projectors. For a pure state $\lvert\psi\rangle$, the probability of outcome $\lambda_k$ is $\langle\psi\rvert P_k\lvert\psi\rangle$. For an ensemble described by @eq-ensemble-density-operator, averaging over the unknown preparation gives
+
+$$
+\Pr(\lambda_k)
+=\sum_jp_j\langle\psi_j\rvert P_k\lvert\psi_j\rangle
+=\operatorname{Tr}(P_k\rho).
+$$ {#eq-density-matrix-born-rule}
+
+The expectation value therefore satisfies
+
+$$
+\mathbb{E}[O]
+=\sum_k\lambda_k\operatorname{Tr}(P_k\rho)
+=\operatorname{Tr}(O\rho).
+$$ {#eq-density-matrix-expectation}
+
+For a computational-basis measurement, $P_x=\lvert x\rangle\langle x\rvert$, so
+
+$$
+\Pr(x)=\operatorname{Tr}(\lvert x\rangle\langle x\rvert\rho)=\langle x\rvert\rho\lvert x\rangle=\rho_{xx}.
+$$ {#eq-density-diagonal-probability}
+
+The diagonal of a density matrix therefore gives the measurement probabilities in that basis. Changing the measurement basis mixes diagonal and off-diagonal entries, allowing coherence to affect observable statistics.
+
+## Characterization of density matrices {#sec-density-matrix-characterization}
+
+::: {#thm-density-matrix-characterization}
+## Characterization of quantum states
+
+An operator $\rho$ is a density operator if and only if
+
+1. $\rho$ is Hermitian;
+2. $\rho$ is positive semidefinite, meaning $\langle\phi\rvert\rho\lvert\phi\rangle\geq0$ for every $\lvert\phi\rangle$;
+3. $\operatorname{Tr}(\rho)=1$.
+:::
+
+::: {.proof}
+An ensemble density operator in @eq-ensemble-density-operator is Hermitian, and
+
+$$
+\langle\phi\rvert\rho\lvert\phi\rangle
+=\sum_jp_j\lvert\langle\phi\vert\psi_j\rangle\rvert^2\geq0.
+$$
+
+Its trace is $\sum_jp_j=1$. Conversely, a Hermitian positive semidefinite operator has a spectral decomposition $\rho=\sum_j\lambda_j\lvert j\rangle\langle j\rvert$ with $\lambda_j\geq0$. The unit-trace condition gives $\sum_j\lambda_j=1$, so the spectral decomposition is an ensemble representation.
+:::
+
+Every density matrix satisfies $0\preceq\rho\preceq I$, and all its eigenvalues lie in $[0,1]$. Its spectral decomposition gives one ensemble of mutually orthogonal states, but an ensemble representation is generally not unique. For example,
+
+$$
+\frac{I}{2}
+=\frac12\lvert0\rangle\langle0\rvert+\frac12\lvert1\rangle\langle1\rvert
+=\frac12\lvert+\rangle\langle+\rvert+\frac12\lvert-\rangle\langle-\rvert.
+$$ {#eq-maximally-mixed-nonunique-ensembles}
+
+No experiment on the system alone can distinguish two preparation procedures that produce the same density operator.
+
+## Purity {#sec-density-matrix-purity}
+
+::: {#def-purity}
+## Purity
+
+The purity of a density operator is
+
+$$
+\gamma(\rho)=\operatorname{Tr}(\rho^2).
+$$ {#eq-purity-definition}
+:::
+
+If $\lambda_1,\ldots,\lambda_d$ are the eigenvalues of a $d$-dimensional density operator, then
+
+$$
+\operatorname{Tr}(\rho^2)=\sum_{j=1}^d\lambda_j^2,
+\qquad
+\sum_{j=1}^d\lambda_j=1.
+$$ {#eq-purity-eigenvalues}
+
+Consequently,
+
+$$
+\frac1d\leq\operatorname{Tr}(\rho^2)\leq1.
+$$ {#eq-purity-bounds}
+
+The upper bound is attained exactly by pure states, equivalently by density operators satisfying $\rho^2=\rho$ or $\operatorname{rank}(\rho)=1$. The lower bound is attained by the maximally mixed state $I/d$.
+
+Purity measures how mixed a state is, but it does not identify the physical origin of the mixedness. Classical uncertainty in state preparation and entanglement with an inaccessible environment can yield exactly the same reduced density operator.
+
+## Qubits and the Bloch ball {#sec-density-matrix-bloch-ball}
+
+The matrices $I,X,Y,Z$ form an orthogonal basis for the $2\times2$ Hermitian matrices under the Hilbert--Schmidt inner product. Every qubit density matrix therefore has a unique representation
+
+$$
+\rho=\frac12\left(I+r_xX+r_yY+r_zZ\right)
+=\frac12\left(I+\boldsymbol{r}\cdot\boldsymbol{\sigma}\right),
+$$ {#eq-qubit-bloch-representation}
+
+where
+
+$$
+r_x=\operatorname{Tr}(\rho X),\qquad
+r_y=\operatorname{Tr}(\rho Y),\qquad
+r_z=\operatorname{Tr}(\rho Z).
+$$ {#eq-bloch-components}
+
+The vector $\boldsymbol{r}=(r_x,r_y,r_z)\in\mathbb{R}^3$ is the Bloch vector. Since $(\boldsymbol{r}\cdot\boldsymbol{\sigma})^2=\lVert\boldsymbol{r}\rVert_2^2I$, the eigenvalues of $\rho$ are
+
+$$
+\lambda_{\pm}=\frac{1\pm\lVert\boldsymbol{r}\rVert_2}{2}.
+$$ {#eq-bloch-density-eigenvalues}
+
+Positivity is therefore equivalent to $\lVert\boldsymbol{r}\rVert_2\leq1$. Pure states lie on the Bloch sphere, mixed states lie inside it, and the maximally mixed state is the origin. Moreover,
+
+$$
+\operatorname{Tr}(\rho^2)=\frac12\left(1+\lVert\boldsymbol{r}\rVert_2^2\right).
+$$ {#eq-qubit-purity-bloch-radius}
+
+Thus loss of purity appears geometrically as motion from the surface toward the interior of the Bloch ball.
+
+## Summary {#sec-lecture-07-summary}
+
+Density matrices distinguish coherent superpositions from probabilistic mixtures and give the measurement rule $\Pr(\lambda_k)=\operatorname{Tr}(P_k\rho)$. Valid states are precisely the Hermitian, positive semidefinite, unit-trace operators. Purity separates pure and mixed states, while the Bloch ball gives a geometric representation of every single-qubit density matrix.
