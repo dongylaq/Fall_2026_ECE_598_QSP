@@ -50,3 +50,11 @@ h3,
 #quarto-content {
   line-height: 1.65;
 }
+
+.block-note-ending > :last-child::after {
+  content: "//";
+  float: right;
+  font-size: 0.85em;
+  letter-spacing: -0.1em;
+  margin-left: 0.5rem;
+}

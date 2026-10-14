@@ -1,0 +1,403 @@
+# Lecture 10: Block Encoding {#sec-lecture-10}
+
+*Class date: October 13, 2026*
+
+## Introduction {#sec-block-encoding-introduction}
+
+Quantum gates acting on a closed system must be unitary. However, many operators of interest are not unitary. For example, the Hamiltonian of a quantum system is Hermitian but not necessarily unitary. To work with such operators on a quantum computer, we need a way to encode them into unitary operators. This is where block encoding comes into play [@GSLW19].
+
+So, how do we represent a non-unitary operator on a quantum computer? The idea is to embed the non-unitary operator into a larger unitary operator. Specifically, we can represent a non-unitary operator $A$ as a block of a unitary operator $U$. This means that $A$ can be found in the top-left corner of $U$, while the rest of $U$ is filled with other elements to ensure that $U$ is unitary.
+
+::: {#def-block-encoding}
+
+A unitary $U_A$ is an $(\alpha, m, \epsilon)$-block encoding of an $n$-qubit operator $A$ if
+
+1. $U_A$ acts on $m+n$ qubits, where $m$ is the number of ancilla qubits,
+1. $\left\lVert A / \alpha - (\bra{0}^{\otimes m} \otimes I_n) U_A (\ket{0}^{\otimes m} \otimes I_n) \right\rVert \leq \epsilon$, where $\alpha>0$ is a scaling factor, $\epsilon\geq0$, and $I_n$ denotes the identity on the $n$-qubit system.
+
+Unless otherwise stated, we use an $m$-block encoding to mean a $(1, m, 0)$-block encoding.
+
+:::
+
+Here, $\epsilon$ measures the error in the normalized matrix $A/\alpha$. Reference [@GSLW19] instead measures the error in $A$, so its error parameter is $\alpha\epsilon$ in our convention.
+
+:::: {#exm-single-qubit-block-encoding .block-note-ending}
+
+Consider the single-qubit operator
+
+$$
+A=\frac14 I+\frac34 X
+=\begin{pmatrix}0.25&0.75\\0.75&0.25\end{pmatrix}.
+$$
+
+The circuit below, adapted from [@Dong2023, Fig. 2.1], gives a $(1,1,0)$-block encoding of $A$. The top wire is the ancilla and the bottom wire is the system qubit.
+
+::: {#fig-single-qubit-block-encoding}
+
+```{.tikz}
+%%| filename: single-qubit-block-encoding
+%%| additionalPackages: \usepackage{amsmath,braket}
+%%| alt: A two-qubit block encoding of one quarter I plus three quarters X. The ancilla undergoes a negative two-pi-over-three Y rotation, controls a CNOT on the system, then undergoes the opposite Y rotation and is postselected in zero.
+\begin{tikzpicture}[x=1cm,y=1cm,line width=0.6pt]
+\node at (3,2.4) {$U_A=\dfrac14\begin{pmatrix}1&3&\sqrt3&-\sqrt3\\3&1&-\sqrt3&\sqrt3\\\sqrt3&-\sqrt3&3&1\\-\sqrt3&\sqrt3&1&3\end{pmatrix}$};
+\draw (0,0.6) -- (6,0.6);
+\draw (0,-0.6) -- (6,-0.6);
+\node[anchor=east] at (0,0.6) {$\ket0$};
+\node[anchor=east] at (0,-0.6) {$\ket\psi$};
+\draw[fill=white] (0.5,0.25) rectangle (2,0.95);
+\node at (1.25,0.6) {$R_Y(-2\pi/3)$};
+\fill (3,0.6) circle (2pt);
+\draw (3,0.6) -- (3,-0.6);
+\draw (3,-0.6) circle (0.13);
+\draw (3,-0.73) -- (3,-0.47);
+\draw[fill=white] (4,0.25) rectangle (5.5,0.95);
+\node at (4.75,0.6) {$R_Y(2\pi/3)$};
+\node[anchor=west] at (6,0.6) {$\bra0$};
+\node[anchor=west] at (6,-0.6) {$A\ket\psi$};
+\end{tikzpicture}
+```
+
+The unitary matrix and circuit for a one-ancilla block encoding of $A$. The output bra denotes postselection onto zero, and the system output is unnormalized. Adapted from [@Dong2023, Fig. 2.1].
+
+:::
+
+With the convention $R_Y(\theta)=e^{-\mathrm{i}\theta Y/2}$, the unitary part of the circuit is
+
+$$
+U_A=\bigl(R_Y(2\pi/3)\otimes I\bigr)
+\operatorname{CNOT}_{a\to s}
+\bigl(R_Y(-2\pi/3)\otimes I\bigr).
+$$
+
+Its top-left block is
+
+$$
+(\bra{0}\otimes I)U_A(\ket{0}\otimes I)
+=\cos^2(\pi/3)I+\sin^2(\pi/3)X
+=A.
+$$
+
+For an input $\ket{\psi}$, measuring the ancilla and obtaining $0$ therefore gives the unnormalized system state $A\ket{\psi}$. This outcome has probability $\left\lVert A\ket{\psi} \right\rVert^2$, and the corresponding normalized state is $A\ket{\psi}/\left\lVert A\ket{\psi} \right\rVert$.
+
+::::
+
+In other words, a block encoding of a matrix $A$ is a unitary whose top-left block is approximately $A$ up to a scaling factor. This scaling factor may be needed to ensure that such a unitary exists. Why? Because a unitary has operator norm 1, whereas its top-left block has operator norm at most 1.
+
+::: {#lem-unitary-block-norm}
+
+Any top-left block of a unitary $U$ has operator norm at most 1.
+
+:::
+
+::: {.proof}
+
+Write $U$ in block form as
+
+$$
+U=\begin{pmatrix}B&C\\D&E\end{pmatrix}.
+$$
+
+For any vector $x$ in the domain of $B$, append zeros to obtain $\binom{x}{0}$. Since $U$ is unitary,
+
+$$
+\left\lVert x \right\rVert^2
+=\left\|U\binom{x}{0}\right\|^2
+=\left\|\binom{Bx}{Dx}\right\|^2
+=\left\lVert Bx \right\rVert^2+\left\lVert Dx \right\rVert^2
+\geq\left\lVert Bx \right\rVert^2,
+$$
+
+where vector norms are Euclidean norms. Thus $\left\lVert Bx \right\rVert\leq\left\lVert x \right\rVert$ for every $x$, and taking the supremum over unit vectors gives $\left\lVert B \right\rVert\leq1$.
+
+:::
+
+Conversely, does every matrix with operator norm at most 1 admit a block encoding? The answer is yes.
+
+::: {#lem-block-encoding-existence}
+
+Let $A$ be an $N\times N$ matrix with $N=2^n$ and $\left\lVert A \right\rVert\leq1$. Then there exists a unitary $1$-block encoding $U$ of $A$.
+
+:::
+
+::: {.proof}
+
+Take a singular value decomposition $A=V\Sigma W^\dagger$, where $V$ and $W$ are unitary and $\Sigma=\operatorname{diag}(\sigma_1,\ldots,\sigma_N)$. Since $\left\lVert A \right\rVert\leq1$, every singular value lies in $[0,1]$. Thus we can define
+
+$$
+D=\sqrt{I-\Sigma^2}
+=\operatorname{diag}\!\left(\sqrt{1-\sigma_1^2},\ldots,\sqrt{1-\sigma_N^2}\right).
+$$
+
+The diagonal matrices $\Sigma$ and $D$ commute and satisfy $\Sigma^2+D^2=I$. Consequently, the matrix
+
+$$
+M=\begin{pmatrix}\Sigma&\mathrm{i} D\\\mathrm{i} D&\Sigma\end{pmatrix}
+$$
+
+satisfies
+
+$$
+M^\dagger M=
+\begin{pmatrix}
+\Sigma^2+D^2&\mathrm{i}(\Sigma D-D\Sigma)\\
+\mathrm{i}(\Sigma D-D\Sigma)&D^2+\Sigma^2
+\end{pmatrix}
+=I_{2N},
+$$
+
+so $M$ is unitary. Now set
+
+$$
+U=
+\begin{pmatrix}V&0\\0&V\end{pmatrix}
+M
+\begin{pmatrix}W^\dagger&0\\0&W^\dagger\end{pmatrix}
+=\begin{pmatrix}
+A&\mathrm{i} VDW^\dagger\\
+\mathrm{i} VDW^\dagger&A
+\end{pmatrix}.
+$$
+
+Each factor is unitary, so $U$ is unitary, and its top-left block is exactly $A$. Identifying the two block indices with one ancilla qubit gives
+
+$$
+(\bra{0}\otimes I_N)U(\ket{0}\otimes I_N)=A,
+$$
+
+as required.
+
+:::
+
+When $A$ is Hermitian, we can simplify the construction using its spectral decomposition. Such a matrix can represent a Hamiltonian. Writing $A=V\Lambda V^\dagger$, with $\left\lVert A \right\rVert\leq1$ as above, we obtain
+
+$$
+U_A = \begin{pmatrix}
+A & \mathrm{i} \sqrt{I-A^2} \\
+\mathrm{i} \sqrt{I-A^2} & A
+\end{pmatrix} =
+\begin{pmatrix}V&0\\0&V\end{pmatrix}
+\begin{pmatrix}
+\Lambda & \mathrm{i} \sqrt{I-\Lambda^2} \\
+\mathrm{i} \sqrt{I-\Lambda^2} & \Lambda
+\end{pmatrix}
+\begin{pmatrix}V^\dagger&0\\0&V^\dagger\end{pmatrix}.
+$$ {#eq-canonical-hermitian-block-encoding}
+
+We call the block encoding obtained from this existence proof a *canonical block encoding* of the given matrix.
+
+## Standard Form of Block Encodings {#sec-block-encoding-standard-form}
+The construction above suggests that a block encoding can be expressed in terms of two-dimensional rotations after suitable changes of input and output bases. For example, changing to the singular-vector bases defined by $V$ and $W$ reduces the canonical block encoding to
+
+$$
+U_A \sim \begin{pmatrix}
+\Sigma & \mathrm{i} \sqrt{I-\Sigma^2} \\
+\mathrm{i} \sqrt{I-\Sigma^2} & \Sigma
+\end{pmatrix}.
+$$ {#eq-canonical-singular-basis}
+
+Writing $\sigma_i=\cos(\theta_i)$ with $\theta_i\in[0,\pi/2]$, the complementary entries are the sines of the same angles. By rearranging the rows and columns, we can write the block encoding as a direct sum of two-dimensional blocks:
+
+$$
+U_A \sim \bigoplus_{i=1}^N \begin{pmatrix}
+\cos(\theta_i) & \mathrm{i} \sin(\theta_i) \\
+\mathrm{i} \sin(\theta_i) & \cos(\theta_i)
+\end{pmatrix}.
+$$ {#eq-canonical-rotation-blocks}
+
+Each two-dimensional subspace can be viewed as the state space of a qubit. This rotation structure underlies *qubitization* [@LowChuang2019]; see also [@Dong2023, Sec. 2.3].
+
+Does the same structure hold for arbitrary block encodings, rather than only the canonical construction? The answer is yes: the *cosine-sine decomposition* (CSD) provides such a standard form. The following statement follows [@Dong2023, Theorem 2.2.2], with phases absorbed into the basis transformations to match our convention for the off-diagonal blocks.
+
+::: {#lem-block-encoding-csd name="Cosine-sine decomposition"}
+
+Let $U$ be a $(p+q)\times(p+q)$ unitary matrix with $q\geq p$, partitioned as
+
+$$
+U=\begin{pmatrix}A&B\\E&F\end{pmatrix},
+\qquad A\in\mathbb{C}^{p\times p}.
+$$
+
+There exist unitary matrices $V_1,W_1\in\mathbb{C}^{p\times p}$ and $V_2,W_2\in\mathbb{C}^{q\times q}$ such that
+
+$$
+U=
+\begin{pmatrix}V_1&0\\0&V_2\end{pmatrix}
+\begin{pmatrix}
+C&\mathrm{i} S&0\\
+\mathrm{i} S&C&0\\
+0&0&I_{q-p}
+\end{pmatrix}
+\begin{pmatrix}W_1^\dagger&0\\0&W_2^\dagger\end{pmatrix},
+$$ {#eq-block-encoding-csd}
+
+where $C=\operatorname{diag}(\cos(\theta_1),\ldots,\cos(\theta_p))$, $S=\operatorname{diag}(\sin(\theta_1),\ldots,\sin(\theta_p))$, and $0\leq\theta_j\leq\pi/2$. In particular, $A=V_1CW_1^\dagger$ is a singular value decomposition. When $q=p$, the last block row and column are absent.
+
+:::
+
+::: {.proof}
+
+Take an SVD $A=V_1CW_1^\dagger$ and set $S=\sqrt{I_p-C^2}$. Since $A^\dagger A+E^\dagger E=I_p$, we have
+
+$$
+(EW_1)^\dagger(EW_1)=S^2.
+$$
+
+Thus the columns of $EW_1$ are orthogonal and have lengths $s_j=S_{jj}$. For each $s_j>0$, choose the $j$th column of $V_2$ to be $-\mathrm{i} EW_1e_j/s_j$, where $e_j$ is the $j$th standard basis vector. Complete these columns to an orthonormal basis, including arbitrary orthonormal choices for the indices with $s_j=0$. Then
+
+$$
+V_2^\dagger EW_1=\begin{pmatrix}\mathrm{i} S\\0\end{pmatrix}.
+$$
+
+Consequently, the first $p$ columns of the unitary matrix
+
+$$
+\widetilde U=
+\begin{pmatrix}V_1^\dagger&0\\0&V_2^\dagger\end{pmatrix}
+U\begin{pmatrix}W_1&0\\0&I_q\end{pmatrix}
+$$
+
+are $\begin{pmatrix}C&\mathrm{i} S&0\end{pmatrix}^{\mathsf T}$. They coincide with the first $p$ columns of the unitary matrix
+
+$$
+M=\begin{pmatrix}C&\mathrm{i} S&0\\\mathrm{i} S&C&0\\0&0&I_{q-p}\end{pmatrix}.
+$$
+
+The remaining columns of $\widetilde U$ and $M$ are two orthonormal bases of the same orthogonal complement. Hence $\widetilde U=M\operatorname{diag}(I_p,K)$ for some $q\times q$ unitary $K$. Setting $W_2^\dagger=K$ gives @eq-block-encoding-csd.
+
+:::
+
+After rearranging its rows and columns, the middle factor in @eq-block-encoding-csd is
+
+$$
+\left[\bigoplus_{j=1}^p
+\begin{pmatrix}
+\cos(\theta_j)&\mathrm{i}\sin(\theta_j)\\
+\mathrm{i}\sin(\theta_j)&\cos(\theta_j)
+\end{pmatrix}\right]\oplus I_{q-p}.
+$$
+
+This is the same two-dimensional rotation structure as in the canonical construction. For a general block encoding, however, the input and output bases can differ: the left and right factors in @eq-block-encoding-csd need not be adjoints of each other. Thus these are rotations between paired input and output subspaces, not necessarily invariant subspaces of $U$ itself.
+
+## Arithmetic of Block Encodings {#sec-block-encoding-arithmetic}
+
+For simplicity, we consider exact block encodings, i.e., $\epsilon=0$. The corresponding results for approximate block encodings can be found in [@GSLW19].
+
+### Measuring a block encoding {#sec-block-encoding-measurement}
+
+Applying a block encoding to a state whose ancilla register is initialized to zero gives
+
+$$
+U_A (\ket{0^m} \otimes \ket{\psi}) = \ket{0^m} \otimes \frac{A\ket{\psi}}{\alpha} + \ket{\bot}.
+$$
+
+Here, $\ket{\bot}$ is an unnormalized vector supported on nonzero ancilla states. It satisfies
+
+$$
+(\bra{0^m} \otimes I_n) \ket{\bot} = 0.
+$$
+
+Hence, the probability of measuring the ancilla register in the all-zero state and the resulting normalized system state are
+
+$$
+p = \left\lVert A\ket{\psi}/\alpha \right\rVert^2, \quad \ket{\psi'} = A \ket{\psi} / \left\lVert A \ket{\psi} \right\rVert \quad (p>0).
+$$
+
+::: {#rem-overly-scaled-block-encodings .block-note-ending name="Overly scaled block encodings"}
+
+If the scaling factor $\alpha$ is too large, the probability of obtaining the all-zero ancilla outcome becomes small. Amplitude amplification can boost a nonzero success probability, at the cost of additional circuit applications.
+
+:::
+
+### Products of block encodings {#sec-block-encoding-products}
+
+Given block encodings of $A$ and $B$, we would like to construct a block encoding of $AB$. Simply multiplying the two unitaries using the same ancilla register does not generally work. For example, block multiplication gives
+
+$$
+\begin{pmatrix}A/\alpha&C_A\\D_A&E_A\end{pmatrix}
+\begin{pmatrix}B/\beta&C_B\\D_B&E_B\end{pmatrix}
+=\begin{pmatrix}AB/(\alpha\beta)+C_AD_B&*\\ *&*\end{pmatrix}.
+$$
+
+The extra term comes from amplitudes that leave the all-zero ancilla subspace under $U_B$ and return under $U_A$. To avoid this contribution, we use a separate ancilla register for each block encoding, following the product construction in [@GSLW19].
+
+::: {#fig-block-encoding-product}
+
+```{.tikz}
+%%| filename: block-encoding-product
+%%| additionalPackages: \usepackage{amsmath,braket}
+%%| alt: Three registers ordered a, system, b. U B acts first on b and the system; U A then acts on a and the system. Both independent ancillas are postselected in zero to obtain A B divided by alpha beta.
+\begin{tikzpicture}[x=1cm,y=1cm, line width=0.6pt]
+% Draw the shared system between the two independent ancilla registers.
+\draw (0,2) -- (6,2);
+\draw (0,1) -- (6,1);
+\draw (0,0) -- (6,0);
+\node[anchor=east] at (0,2) {$a:\ \ket{0^{m_A}}$};
+\node[anchor=east] at (0,1) {$s:\ \ket{\psi}$};
+\node[anchor=east] at (0,0) {$b:\ \ket{0^{m_B}}$};
+\draw[fill=white] (1.1,-0.3) rectangle (2.3,1.3);
+\node at (1.7,0.5) {$U_B$};
+\draw[fill=white] (3.7,0.7) rectangle (4.9,2.3);
+\node at (4.3,1.5) {$U_A$};
+\node[anchor=west] at (6,2) {$\bra{0^{m_A}}$};
+\node[anchor=west] at (6,1) {$\displaystyle\frac{AB\ket{\psi}}{\alpha\beta}$};
+\node[anchor=west] at (6,0) {$\bra{0^{m_B}}$};
+\end{tikzpicture}
+```
+
+The wires are ordered as $(a,s,b)$ to show which registers each unitary acts on. The bras at the output denote postselection onto zero; the system output shown is unnormalized.
+
+:::
+
+::: {#lem-block-encoding-product name="Product of block encodings"}
+
+Let $U_A$ be an $(\alpha,m_A,0)$-block encoding of $A$ and $U_B$ be a $(\beta,m_B,0)$-block encoding of $B$, where $A$ and $B$ act on the same $n$-qubit system. Introduce separate ancilla registers $a$ and $b$ of sizes $m_A$ and $m_B$, respectively. Let $\widetilde U_A$ act as $U_A$ on $(a,s)$ and as the identity on $b$, and let $\widetilde U_B$ act as $U_B$ on $(b,s)$ and as the identity on $a$. Then
+
+$$
+U_{AB}=\widetilde U_A\widetilde U_B
+$$ {#eq-block-encoding-product}
+
+is an $(\alpha\beta,m_A+m_B,0)$-block encoding of $AB$.
+
+:::
+
+::: {.proof}
+
+Expand the two unitaries in the computational bases of their ancilla registers:
+
+$$
+U_A=\sum_{j,k}\ket{j}\bra{k}_a\otimes A_{jk},
+\qquad
+U_B=\sum_{\ell,r}\ket{\ell}\bra{r}_b\otimes B_{\ell r},
+$$
+
+where $A_{jk}$ and $B_{\ell r}$ are operators on the system, with $A_{00}=A/\alpha$ and $B_{00}=B/\beta$. Here, the index $0$ denotes the all-zero state of the corresponding register. In the register order $(a,b,s)$, their product is
+
+$$
+U_{AB}=\sum_{j,k,\ell,r}
+\ket{j}\bra{k}_a\otimes\ket{\ell}\bra{r}_b\otimes A_{jk}B_{\ell r}.
+$$
+
+Taking the all-zero block in both ancilla registers therefore gives
+
+$$
+(\bra{0^{m_A}}_a\otimes\bra{0^{m_B}}_b\otimes I_s)
+U_{AB}
+(\ket{0^{m_A}}_a\otimes\ket{0^{m_B}}_b\otimes I_s)
+=\frac{AB}{\alpha\beta},
+$$
+
+where $I_s$ is the identity on the system. Since $U_{AB}$ is a product of unitaries, this proves the claim.
+
+:::
+
+Operationally, initialize both ancilla registers to zero, apply $U_B$ first and then $U_A$, and keep both registers until the end. No intermediate measurement is needed. Because $U_A$ does not act on $b$, a nonzero outcome recorded in $b$ cannot return to zero during the second step. Thus selecting the all-zero outcome in both registers leaves precisely $AB\ket{\psi}/(\alpha\beta)$. The construction uses each block encoding once; the scaling factors multiply and the ancilla counts add.
+
+### Additions and transformations {#sec-block-encoding-additions}
+
+We will discuss how to add block-encoded operators when we introduce linear combinations of unitaries (LCU). In the remaining lectures on quantum algorithms, we will study transformations of block encodings of the form
+
+$$
+U_A \mapsto U_{f(A)}
+$$
+
+where $f$ is a suitable function of a Hermitian matrix $A$. For general matrices, QSVT provides transformations of singular values [@GSLW19].

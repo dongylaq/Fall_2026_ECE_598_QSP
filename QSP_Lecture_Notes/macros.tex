@@ -2,6 +2,12 @@
 \usepackage{amsmath,amssymb,mathtools}
 \usepackage{braket}
 \usepackage{tikz}
+\usepackage{etoolbox}
+
+\newcommand{\blocknoteend}{\par\nobreak\hfill{\small /\kern-0.15em/}\par}
+\AtEndEnvironment{example}{\blocknoteend}
+\AtEndEnvironment{remark}{\blocknoteend}
+\AtEndEnvironment{refremark}{\blocknoteend}
 
 \newcommand{\cH}{\mathcal{H}}
 \newcommand{\cL}{\mathcal{L}}
