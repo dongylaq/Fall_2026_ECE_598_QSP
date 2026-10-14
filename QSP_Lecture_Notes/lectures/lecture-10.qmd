@@ -2,7 +2,7 @@
 
 *Class date: October 13, 2026*
 
-## Introduction {#sec-block-encoding-introduction}
+## Basics of Block Encodings {#sec-block-encoding-introduction}
 
 Quantum gates acting on a closed system must be unitary. However, many operators of interest are not unitary. For example, the Hamiltonian of a quantum system is Hermitian but not necessarily unitary. To work with such operators on a quantum computer, we need a way to encode them into unitary operators. This is where block encoding comes into play [@GSLW19].
 
@@ -80,6 +80,38 @@ $$
 For an input $\ket{\psi}$, measuring the ancilla and obtaining $0$ therefore gives the unnormalized system state $A\ket{\psi}$. This outcome has probability $\left\lVert A\ket{\psi} \right\rVert^2$, and the corresponding normalized state is $A\ket{\psi}/\left\lVert A\ket{\psi} \right\rVert$.
 
 ::::
+
+::: {#exm-block-encoding-hamiltonian-evolution .block-note-ending name="Block encodings from Hamiltonian evolution"}
+
+Let $H$ be a Hermitian operator. Suppose we have access to controlled Hamiltonian evolution that applies $e^{\mathrm{i}H}$ when the ancilla is $\ket{0}$ and $e^{-\mathrm{i}H}$ when it is $\ket{1}$:
+
+$$
+W=\ket{0}\bra{0}\otimes e^{\mathrm{i}H}+\ket{1}\bra{1}\otimes e^{-\mathrm{i}H}
+=\begin{pmatrix}e^{\mathrm{i}H}&0\\0&e^{-\mathrm{i}H}\end{pmatrix}.
+$$ {#eq-controlled-hamiltonian-evolution}
+
+Applying a Hadamard gate $\mathrm{H}$ to the ancilla before and after $W$ gives
+
+$$
+\begin{aligned}
+U_{\cos(H)}&=(\mathrm{H}\otimes I)W(\mathrm{H}\otimes I)\\
+&=\frac12\begin{pmatrix}
+e^{\mathrm{i}H}+e^{-\mathrm{i}H}&e^{\mathrm{i}H}-e^{-\mathrm{i}H}\\
+e^{\mathrm{i}H}-e^{-\mathrm{i}H}&e^{\mathrm{i}H}+e^{-\mathrm{i}H}
+\end{pmatrix}\\
+&=\begin{pmatrix}\cos(H)&\mathrm{i}\sin(H)\\\mathrm{i}\sin(H)&\cos(H)\end{pmatrix}.
+\end{aligned}
+$$ {#eq-cosine-hamiltonian-block-encoding}
+
+Thus
+
+$$
+(\bra{0}\otimes I)U_{\cos(H)}(\ket{0}\otimes I)=\cos(H),
+$$
+
+so $U_{\cos(H)}$ is a $(1,1,0)$-block encoding of $\cos(H)$, using one ancilla qubit and one application of $W$.
+
+:::
 
 In other words, a block encoding of a matrix $A$ is a unitary whose top-left block is approximately $A$ up to a scaling factor. This scaling factor may be needed to ensure that such a unitary exists. Why? Because a unitary has operator norm 1, whereas its top-left block has operator norm at most 1.
 
