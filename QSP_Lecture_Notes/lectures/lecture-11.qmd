@@ -1,0 +1,336 @@
+# Lecture 11: Linear Combination of Unitaries {#sec-lecture-11}
+
+*Class date: October 21, 2026*
+
+## Basics of LCU {#sec-lcu-basics}
+
+### A linear combination of two block encodings {#sec-lcu-two-block-encodings}
+
+Suppose we have exact $(1,m,0)$-block encodings $U_A$ and $U_B$ of two operators $A$ and $B$ acting on the same system. Can we construct a block encoding of a linear combination of $A$ and $B$? We begin with a single-qubit rotation that determines the weights of the two terms.
+
+Introduce a new ancilla qubit $a$, in addition to the $m$ block-encoding ancillas $b$ and the system register $s$. On $a$, define the preparation unitary
+
+$$
+P=R_X(\theta)=\begin{pmatrix}c&-\mathrm{i} s\\-\mathrm{i} s&c\end{pmatrix},\qquad c=\cos(\theta/2),\quad s=\sin(\theta/2).
+$$ {#eq-lcu-two-term-prepare}
+
+The selection unitary applies $U_A$ when $a$ is $\ket{0}$ and $U_B$ when $a$ is $\ket{1}$:
+
+$$
+\operatorname{SELECT}=\ket{0}\bra{0}_a\otimes U_A+\ket{1}\bra{1}_a\otimes U_B=\begin{pmatrix}U_A&0\\0&U_B\end{pmatrix}.
+$$ {#eq-lcu-two-term-select}
+
+We apply $P$, then $\operatorname{SELECT}$, and finally $P^\dagger=R_X(-\theta)$ to unprepare the new ancilla. The resulting circuit is
+
+::: {#fig-lcu-two-block-encodings}
+
+```{.tikz}
+%%| filename: lcu-two-block-encodings
+%%| additionalPackages: \usepackage{amsmath,braket}
+%%| alt: A selection qubit controls U A on zero and U B on one. R X rotations prepare and unprepare the selection qubit, and both ancilla registers are postselected in zero.
+\begin{tikzpicture}[x=1cm,y=1cm,line width=0.6pt]
+\draw (0,2) -- (7,2);
+\draw (0,1) -- (7,1);
+\draw (0,0) -- (7,0);
+\node[anchor=east] at (0,2) {$a:\ \ket{0}$};
+\node[anchor=east] at (0,1) {$b:\ \ket{0^m}$};
+\node[anchor=east] at (0,0) {$s:\ \ket{\psi}$};
+\draw[fill=white] (0.35,1.7) rectangle (1.65,2.3);
+\node at (1,2) {$R_X(\theta)$};
+\draw (2.7,2) -- (2.7,1.3);
+\draw[fill=white] (2.7,2) circle (2.5pt);
+\draw[fill=white] (2.2,-0.3) rectangle (3.2,1.3);
+\node at (2.7,0.5) {$U_A$};
+\draw (4.3,2) -- (4.3,1.3);
+\fill (4.3,2) circle (2.5pt);
+\draw[fill=white] (3.8,-0.3) rectangle (4.8,1.3);
+\node at (4.3,0.5) {$U_B$};
+\draw[fill=white] (5.25,1.7) rectangle (6.75,2.3);
+\node at (6,2) {$R_X(-\theta)$};
+\node[anchor=west] at (7,2) {$\bra{0}$};
+\node[anchor=west] at (7,1) {$\bra{0^m}$};
+\node[anchor=west] at (7,0) {$C_\theta\ket{\psi}$};
+\end{tikzpicture}
+```
+
+Open and filled controls select $\ket{0}$ and $\ket{1}$, respectively. The output bras denote postselection, and $C_\theta\ket{\psi}$ is unnormalized.
+
+:::
+
+Multiplying the blocks gives
+
+$$
+\begin{aligned}
+W_\theta&=(P^\dagger\otimes I)\operatorname{SELECT}(P\otimes I)\\
+&=\begin{pmatrix}
+c^2U_A+s^2U_B&\mathrm{i} cs(U_B-U_A)\\
+\mathrm{i} cs(U_A-U_B)&s^2U_A+c^2U_B
+\end{pmatrix}.
+\end{aligned}
+$$ {#eq-lcu-two-term-unitary}
+
+Projecting $a$ onto zero selects the top-left block $c^2U_A+s^2U_B$. Projecting the original ancillas $b$ onto zero then selects the corresponding blocks of $U_A$ and $U_B$, so
+
+$$
+(\bra{0}_a\otimes\bra{0^m}_b\otimes I_s)W_\theta(\ket{0}_a\otimes\ket{0^m}_b\otimes I_s)=C_\theta,
+\qquad C_\theta=\cos^2(\theta/2)A+\sin^2(\theta/2)B.
+$$ {#eq-lcu-two-term-block}
+
+Thus $W_\theta$ is a $(1,m+1,0)$-block encoding of $C_\theta$. For $\theta=\pi/2$, it block encodes $(A+B)/2$, or equivalently is a $(2,m+1,0)$-block encoding of $A+B$.
+
+This calculation explains why the preparation amplitudes are square roots of the desired weights. The preparation contributes one factor of an amplitude, and the inverse preparation contributes its complex conjugate. Their product gives the nonnegative coefficient of each operator. This is the two-term version of the linear combination of unitaries (LCU) construction [@ChildsWiebe2012; @ChildsKothariSomma2017].
+
+::: {#exm-lcu-weighted-pauli .block-note-ending name="A weighted combination of $I$ and $X$"}
+
+Take $U_A=I$ and $U_B=X$, which are block encodings of themselves with no ancillas ($m=0$). The selection unitary is then a CNOT gate, with $a$ as the control and the system qubit as the target. Choosing $\theta=\pi/3$ gives
+
+$$
+C_{\pi/3}=\cos^2(\pi/6)I+\sin^2(\pi/6)X=\frac34I+\frac14X=\begin{pmatrix}0.75&0.25\\0.25&0.75\end{pmatrix}.
+$$
+
+Consequently,
+
+$$
+W_{\pi/3}=\bigl(R_X(-\pi/3)\otimes I\bigr)\operatorname{CNOT}_{a\to s}\bigl(R_X(\pi/3)\otimes I\bigr)
+$$
+
+is a $(1,1,0)$-block encoding of $0.75I+0.25X$.
+
+The example in the previous lecture had the weights reversed: $0.25I+0.75X$. Choosing $\theta=2\pi/3$ gives exactly these weights. The same zero block is obtained using $Y$-axis rotations: preparing with $R_Y(-\theta)$ and unpreparing with $R_Y(\theta)$ gives
+
+$$
+(\bra{0}\otimes I)\bigl(R_Y(\theta)\otimes I\bigr)\operatorname{CNOT}_{a\to s}\bigl(R_Y(-\theta)\otimes I\bigr)(\ket{0}\otimes I)=\cos^2(\theta/2)I+\sin^2(\theta/2)X.
+$$
+
+Thus the circuit from the previous lecture is also a two-term LCU construction.
+
+:::
+
+### General coefficients: phases in SELECT {#sec-lcu-general-coefficients}
+
+So far, we have constructed a block encoding of a convex combination of $A$ and $B$. What if we want a general linear combination $aA+bB$, with negative or complex coefficients? The idea is to absorb the phases into the selected unitaries and use PREPARE to set the magnitudes of the coefficients.
+
+Write
+
+$$
+a=|a|e^{\mathrm{i}\phi_a},\qquad b=|b|e^{\mathrm{i}\phi_b},\qquad \lambda=|a|+|b|>0.
+$$
+
+Then
+
+$$
+\frac{aA+bB}{\lambda}=\frac{|a|}{\lambda}\bigl(e^{\mathrm{i}\phi_a}A\bigr)+\frac{|b|}{\lambda}\bigl(e^{\mathrm{i}\phi_b}B\bigr).
+$$
+
+The weights are now nonnegative and sum to one, so this is again a convex combination. Moreover, $e^{\mathrm{i}\phi_a}U_A$ and $e^{\mathrm{i}\phi_b}U_B$ are unitary block encodings of the two phase-modified operators.
+
+We can therefore use the same circuit as before. Choose $P=R_X(\theta)$ with
+
+$$
+c^2=\frac{|a|}{\lambda},\qquad s^2=\frac{|b|}{\lambda},
+$$
+
+and include the phases in SELECT:
+
+$$
+\operatorname{SELECT}_{a,b}=\ket{0}\bra{0}\otimes e^{\mathrm{i}\phi_a}U_A+\ket{1}\bra{1}\otimes e^{\mathrm{i}\phi_b}U_B.
+$$ {#eq-lcu-general-select}
+
+Using the previous calculation, $(P^\dagger\otimes I)\operatorname{SELECT}_{a,b}(P\otimes I)$ has all-zero block
+
+$$
+c^2e^{\mathrm{i}\phi_a}A+s^2e^{\mathrm{i}\phi_b}B=\frac{aA+bB}{\lambda}.
+$$ {#eq-lcu-general-block}
+
+Thus we obtain a $(\lambda,m+1,0)$-block encoding of $aA+bB$. The phases in SELECT are relative phases between its branches, so they affect the resulting combination. In particular, a negative coefficient is obtained by adding a minus sign to the corresponding branch.
+
+::: {#exm-lcu-negative-coefficient .block-note-ending name="A combination with a negative coefficient"}
+
+To construct a block encoding of $2A-B$, take $\lambda=3$. Choose $c^2=2/3$ and $s^2=1/3$ in PREPARE, and use $U_A$ and $-U_B$ as the two SELECT branches. The all-zero block is
+
+$$
+\frac23A-\frac13B=\frac{2A-B}{3},
+$$
+
+giving a $(3,m+1,0)$-block encoding of $2A-B$. The minus sign can be implemented with a $Z$ gate on the selection qubit.
+
+:::
+
+### From two terms to many terms {#sec-lcu-many-terms}
+
+The same idea extends to a linear combination of $K$ operators:
+
+$$
+C=\sum_{j=0}^{K-1}a_jA_j,\qquad a_j=|a_j|e^{\mathrm{i}\phi_j},\qquad \lambda=\sum_{j=0}^{K-1}|a_j|>0.
+$$
+
+Suppose each $A_j$ has an exact $(1,m,0)$-block encoding $U_j$. We replace the single selection qubit by an $\ell$-qubit register, where $\ell=\lceil\log_2K\rceil$, so that each term has its own label $\ket{j}$.
+
+PREPARE is now a unitary $P$ that prepares the coefficient state
+
+$$
+P\ket{0^\ell}=\sum_{j=0}^{K-1}\sqrt{\frac{|a_j|}{\lambda}}\ket{j}.
+$$ {#eq-lcu-many-prepare}
+
+SELECT applies the corresponding block encoding, including the coefficient phase:
+
+$$
+\operatorname{SELECT}\bigl(\ket{j}\otimes\ket{\chi}\bigr)=\ket{j}\otimes e^{\mathrm{i}\phi_j}U_j\ket{\chi},\qquad 0\leq j<K.
+$$ {#eq-lcu-many-select}
+
+Here $\ket{\chi}$ includes the original block-encoding ancillas and the system. On unused labels, SELECT acts as the identity.
+
+Starting with all ancillas in zero, PREPARE and SELECT give
+
+$$
+\ket{0^\ell}\ket{0^m}\ket{\psi}
+\ \longmapsto\ \sum_{j=0}^{K-1}\sqrt{\frac{|a_j|}{\lambda}}\ket{j}\otimes e^{\mathrm{i}\phi_j}U_j\bigl(\ket{0^m}\ket{\psi}\bigr).
+$$
+
+We then apply $P^\dagger$ to the selection register. Since $\bra{0^\ell}P^\dagger\ket{j}=\sqrt{|a_j|/\lambda}$, its all-zero block is
+
+$$
+\sum_{j=0}^{K-1}\frac{|a_j|}{\lambda}e^{\mathrm{i}\phi_j}U_j=\frac1\lambda\sum_{j=0}^{K-1}a_jU_j.
+$$
+
+Taking the all-zero block of the original $m$ ancillas gives $C/\lambda$. Thus
+
+$$
+W=(P^\dagger\otimes I)\operatorname{SELECT}(P\otimes I)
+$$ {#eq-lcu-many-unitary}
+
+is a $(\lambda,m+\ell,0)$-block encoding of $C$. The circuit has the same three steps as before; the selection register now labels $K$ branches instead of two.
+
+::: {#exm-lcu-three-paulis .block-note-ending name="A sum of Pauli operators"}
+
+Consider $C=X+Y+2Z$. Here $K=3$, $\lambda=4$, and two selection qubits suffice. Prepare
+
+$$
+P\ket{00}=\frac12\ket{00}+\frac12\ket{01}+\frac1{\sqrt2}\ket{10},
+$$
+
+and select $X$, $Y$, or $Z$ on labels $00$, $01$, or $10$, respectively. The unused label $11$ can select $I$. After unpreparing, the all-zero block is
+
+$$
+\frac14X+\frac14Y+\frac12Z=\frac{C}{4}.
+$$
+
+This gives a $(4,2,0)$-block encoding of $C$.
+
+:::
+
+## SELECT for Powers of a Unitary {#sec-lcu-unitary-powers}
+
+Suppose we want to combine the $K$ terms $I,U,U^2,\ldots,U^{K-1}$. Their shared structure lets us build SELECT using the binary representation of the index. For simplicity, take $K=2^\ell$ and write
+
+$$
+k=\sum_{j=0}^{\ell-1}2^jk_j,\qquad k_j\in\{0,1\}.
+$$
+
+Then
+
+$$
+U^k=\prod_{j=0}^{\ell-1}\bigl(U^{2^j}\bigr)^{k_j}.
+$$ {#eq-lcu-binary-powers}
+
+For each $j$, apply $U^{2^j}$ to the system controlled by the bit $k_j$. Together, these gates implement
+
+$$
+\operatorname{SELECT}_U=\sum_{k=0}^{K-1}\ket{k}\bra{k}\otimes U^k,
+\qquad \ket{k}\ket{\psi}\mapsto\ket{k}U^k\ket{\psi}.
+$$ {#eq-lcu-power-select}
+
+For $K=8$, the circuit has just three controlled power gates:
+
+::: {#fig-lcu-binary-power-select}
+
+```{.tikz}
+%%| filename: lcu-binary-power-select
+%%| additionalPackages: \usepackage{amsmath,braket}
+%%| alt: Three index bits k zero, k one, and k two independently control U, U squared, and U to the fourth power on a shared system, implementing U to the k power.
+\begin{tikzpicture}[x=1cm,y=0.8cm,line width=0.6pt]
+\draw (0,3) -- (6.4,3);
+\draw (0,2) -- (6.4,2);
+\draw (0,1) -- (6.4,1);
+\draw (0,0) -- (6.4,0);
+\node[anchor=east] at (0,3) {$\ket{k_0}$};
+\node[anchor=east] at (0,2) {$\ket{k_1}$};
+\node[anchor=east] at (0,1) {$\ket{k_2}$};
+\node[anchor=east] at (0,0) {$\ket{\psi}$};
+\draw (1.4,3) -- (1.4,0.35);
+\fill (1.4,3) circle (2.5pt);
+\draw[fill=white] (0.9,-0.35) rectangle (1.9,0.35);
+\node at (1.4,0) {$U$};
+\draw (3.2,2) -- (3.2,0.35);
+\fill (3.2,2) circle (2.5pt);
+\draw[fill=white] (2.7,-0.35) rectangle (3.7,0.35);
+\node at (3.2,0) {$U^2$};
+\draw (5,1) -- (5,0.35);
+\fill (5,1) circle (2.5pt);
+\draw[fill=white] (4.5,-0.35) rectangle (5.5,0.35);
+\node at (5,0) {$U^4$};
+\node[anchor=west] at (6.4,0) {$U^k\ket{\psi}$};
+\end{tikzpicture}
+```
+
+Here $k=k_0+2k_1+4k_2$. The index register is unchanged.
+
+:::
+
+In general, we need $\ell=\log_2K$ singly controlled power gates, rather than a separate branch for every $k$. This counts controlled $U^{2^j}$ as available operations. If only the basic controlled $U$ is available, implementing these powers by repetition still uses $1+2+\cdots+2^{\ell-1}=K-1$ calls to $U$.
+
+For Hamiltonian evolution, take $U=e^{\mathrm{i}\tau H}$. Its powers are precisely the operator versions of Fourier basis functions:
+
+$$
+e^{\mathrm{i} k\tau x}\quad\longleftrightarrow\quad U^k=e^{\mathrm{i} k\tau H}.
+$$
+
+On an eigenstate $H\ket{E}=E\ket{E}$, this follows from $U^k\ket{E}=e^{\mathrm{i} k\tau E}\ket{E}$. The controlled power gates above are therefore controlled evolutions for times $\tau,2\tau,4\tau,\ldots$. Negative powers can be implemented using $U^\dagger$.
+
+## Constructing Fourier Series with LCU {#sec-lcu-fourier-series}
+
+Let $U=e^{\mathrm{i}\tau H}$. Fourier-based constructions of matrix functions using LCU are developed in [@ChildsKothariSomma2017]. Following the notation of the previous section, consider a $K$-term Fourier series with $K=2^\ell$. Its nonnegative orders range from $0$ to $K-1$:
+
+$$
+f(x)=\sum_{k=0}^{K-1}c_ke^{\mathrm{i} k\tau x},\qquad f(H)=\sum_{k=0}^{K-1}c_kU^k.
+$$ {#eq-lcu-fourier-series}
+
+Write $c_k=|c_k|e^{\mathrm{i}\phi_k}$ and $\lambda=\sum_k|c_k|>0$. The LCU construction [@LinWiebe2026, Sec. 9.2] prepares
+
+$$
+P\ket{0^\ell}=\sum_{k=0}^{K-1}\sqrt{\frac{|c_k|}{\lambda}}\ket{k},
+$$ {#eq-lcu-fourier-prepare}
+
+and uses the power-selection circuit from the previous section, with the coefficient phases included:
+
+$$
+\operatorname{SELECT}_f=\sum_{k=0}^{K-1}\ket{k}\bra{k}\otimes e^{\mathrm{i}\phi_k}U^k.
+$$ {#eq-lcu-fourier-select}
+
+After unpreparing, the all-zero block of $W=(P^\dagger\otimes I)\operatorname{SELECT}_f(P\otimes I)$ is
+
+$$
+\frac1\lambda\sum_{k=0}^{K-1}c_kU^k=\frac{f(H)}{\lambda}.
+$$ {#eq-lcu-fourier-block}
+
+Thus we obtain a $(\lambda,\ell,0)$-block encoding of $f(H)$.
+
+::: {#rem-lcu-balanced-fourier .block-note-ending name="Balancing the Fourier orders"}
+
+For even $K$, multiply the system output by $U^{-K/2}$. The encoded operator becomes
+
+$$
+g(H)=U^{-K/2}f(H)=\sum_{k=0}^{K-1}c_kU^{k-K/2}.
+$$
+
+This is still a $K$-term Fourier series, now with orders ranging from $-K/2$ to $K/2-1$. The circuit gives a $(\lambda,\ell,0)$-block encoding of the balanced series $g(H)$.
+
+:::
+
+The binary-power SELECT circuit uses $1+2+\cdots+2^{\ell-1}=K-1$ basic controlled-$U$ queries. Applying the balancing shift separately adds $K/2$ queries to $U^\dagger$. Thus this implementation of a $K$-term balanced Fourier series uses
+
+$$
+N_{\mathrm{queries}}=\frac{3K}{2}-1=O(K),\qquad N_{\mathrm{ancillas}}=\ell=\log_2K.
+$$
+
+These counts are for one block-encoding application and exclude any workspace needed to implement the supplied controlled evolution. PREPARE, its inverse, and the coefficient phases require no queries to $U$.
