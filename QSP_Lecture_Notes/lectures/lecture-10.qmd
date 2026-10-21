@@ -57,7 +57,7 @@ The circuit below, adapted from [@Dong2023, Fig. 2.1], gives a $(1,1,0)$-block e
 \end{tikzpicture}
 ```
 
-The unitary matrix and circuit for a one-ancilla block encoding of $A$. The output bra denotes postselection onto zero, and the system output is unnormalized. Adapted from [@Dong2023, Fig. 2.1].
+The unitary matrix and circuit for a one-ancilla block encoding of $A$. Adapted from [@Dong2023, Fig. 2.1].
 
 :::
 
@@ -376,7 +376,7 @@ The extra term comes from amplitudes that leave the all-zero ancilla subspace un
 \end{tikzpicture}
 ```
 
-The wires are ordered as $(a,s,b)$ to show which registers each unitary acts on. The bras at the output denote postselection onto zero; the system output shown is unnormalized.
+Block encoding of $AB$ using independent ancilla registers.
 
 :::
 

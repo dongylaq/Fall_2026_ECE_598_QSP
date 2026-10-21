@@ -273,7 +273,7 @@ For $K=8$, the circuit has just three controlled power gates:
 \end{tikzpicture}
 ```
 
-Here $k=k_0+2k_1+4k_2$. The index register is unchanged.
+Here $k=k_0+2k_1+4k_2$.
 
 :::
 
@@ -327,10 +327,10 @@ This is still a $K$-term Fourier series, now with orders ranging from $-K/2$ to 
 
 :::
 
-The binary-power SELECT circuit uses $1+2+\cdots+2^{\ell-1}=K-1$ basic controlled-$U$ queries. Applying the balancing shift separately adds $K/2$ queries to $U^\dagger$. Thus this implementation of a $K$-term balanced Fourier series uses
+The binary-power SELECT circuit uses $1+2+\cdots+2^{\ell-1}=K-1$ basic controlled-$U$ queries. Applying the balancing shift separately adds $K/2$ queries to $U^\dagger$. The query count and number of selection ancillas for one application of this block encoding are
 
 $$
 N_{\mathrm{queries}}=\frac{3K}{2}-1=O(K),\qquad N_{\mathrm{ancillas}}=\ell=\log_2K.
 $$
 
-These counts are for one block-encoding application and exclude any workspace needed to implement the supplied controlled evolution. PREPARE, its inverse, and the coefficient phases require no queries to $U$.
+PREPARE, its inverse, and the coefficient phases require no queries to $U$.
